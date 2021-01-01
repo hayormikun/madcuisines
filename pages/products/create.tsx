@@ -22,12 +22,16 @@ const createItem = async (item: FormInputs): Promise<FormInputs> => {
 
 const schema = yup.object().shape({
   name: yup.string().required().max(30),
-  category: yup.string().required('Select a category').max(20),
+  categoryId: yup.string().required('Select a category'),
+  material: yup.string().required('Product material is required').max(30),
   description: yup.string().required('Product description is required').max(200),
+  note: yup.string().required('Product note is required').max(150),
   unitOfMeasurement: yup.string().required('Unit of measurement is required').max(20),
   quantityAvailable: yup.number().positive("Quantity must be greater than zero").integer('Quantity must be a whole number').required('Available Quantity is required'),
   unitPrice: yup.number().positive('Price must be greater than zero').required('Product price is required'),
-  falsePrice: yup.string(),
+  unitSale: yup.number().positive('Unit sale must be greater than zero').required('Unit sale is required'),
+  falsePrice: yup.number().required('Discount price is required'),
+  status: yup.string().required(),
   minOrder: yup.number().positive('Order must be greater than zero').integer('Quantity must be a whole number').required('Minimum order is required'),
 })
 
@@ -81,7 +85,6 @@ const create = () => {
           {isSuccess ? 'Product created successfully' : ''}
           <form
             onSubmit={handleSubmit(onSubmit)}
-            action="POST"
             encType="multipart/formdata"
             className="text-gray-700 font-semibold mx-auto w-6/12"
           >
@@ -107,17 +110,17 @@ const create = () => {
                   className="p-2 rounded border-2"
                   id="category"
                   placeholder="Select Category"
-                  {...register('category')}
+                  {...register('categoryId')}
                 >
                   {categories?.map((category: ICategories) => (
-                    <option className='h-fit w-fit' key={category.categoryId} value={category.name}>
+                    <option className='h-fit w-fit' key={category.categoryId} value={category.categoryId}>
                       {category.name}
                     </option>
                   ))}
                 </select>
-                {errors.category && (
+                {errors.categoryId && (
                   <span className="text-red-500">
-                    {errors.category.message}
+                    {errors.categoryId.message}
                   </span>
                 )}
               </div>
@@ -206,6 +209,43 @@ const create = () => {
                 )}
               </div>
             </div>
+
+            <div className="lg:flex lg:justify-between my-3 overflow-hidden">
+              <div className="grid gap-3 w-full my-3 mr-3 h-fit">
+                <label htmlFor="status">Status:</label>
+                <input
+                  className="p-2 rounded w-full border-2 h-fit"
+                  type={'text'}
+                  id="status"
+                  placeholder="Product status"
+                  {...register('status')}
+                />
+                {errors.status && (
+                  <span className="text-red-500">
+                    {errors.status.message}
+                  </span>
+                )}
+              </div>
+
+              <div className="grid gap-3 my-3 w-full h-fit">
+                <label htmlFor="sale" className="font-semibold">
+                  Unit Sale:
+                </label>
+                <input
+                  className="p-2 rounded w-full border-2 h-fit"
+                  type={'number'}
+                  id="sale"
+                  placeholder="Unit sale"
+                  {...register('unitSale')}
+                />
+                {errors.unitSale && (
+                  <span className="text-red-500">
+                    {errors.unitSale.message}
+                  </span>
+                )}
+              </div>
+            </div>
+
             <div className="lg:flex lg:justify-between">
               <div className="grid gap-3 w-full my-3 mr-3 h-fit">
                 <label htmlFor="description">Description:</label>
@@ -222,7 +262,7 @@ const create = () => {
                 )}
               </div>
 
-              {/* <div className="grid gap-3 my-3 w-full">
+              <div className="grid gap-3 my-3 w-full">
                 <label htmlFor="note">Note:</label>
                 <textarea
                   className="p-3  w-full rounded border-2"
@@ -230,11 +270,11 @@ const create = () => {
                   placeholder="Product Note"
                   {...register('note')}
                 ></textarea>
-              </div> */}
+              </div>
             </div>
 
             <div className="lg:flex lg:justify-between my-3">
-              {/* <div className="grid gap-3 my-3 w-full mr-3">
+              <div className="grid gap-3 my-3 w-full mr-3">
                 <label htmlFor="material">Material:</label>
                 <input
                   className="p-2 w-full rounded border-2"
@@ -248,7 +288,7 @@ const create = () => {
                     {errors.material.message}
                   </span>
                 )}
-              </div> */}
+              </div>
 
               <div className="grid gap-3 my-3 w-full">
                 <label htmlFor="images">Choose an image or images:</label>

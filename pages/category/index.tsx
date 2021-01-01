@@ -1,5 +1,7 @@
 import { PencilAltIcon, TrashIcon } from '@heroicons/react/outline'
-import { dehydrate, QueryClient, useQuery } from 'react-query'
+import axios from 'axios'
+import { redirect } from 'next/dist/server/api-utils'
+import { dehydrate, QueryClient, useMutation, useQuery } from 'react-query'
 import { Heading } from '../../components/Heading'
 import { Sidebar } from '../../components/Sidebar'
 import { ICategories } from '../../libs/interfaces/ICategory'
@@ -9,6 +11,11 @@ const getCategories = async()=>{
   const data = await res.json()
   return data.data
 }
+
+const deleteCategory = async()=>{
+ return await axios.delete('http://api.madcuisines.com/category/delete-category')
+}
+
 
 export async function getServerSideProps() {
   const queryClient = new QueryClient
@@ -24,7 +31,7 @@ export async function getServerSideProps() {
 
 const category = () => {
   const {data: categories, isLoading, isError, error} = useQuery('categories', getCategories)
-  console.log(categories)
+  const {mutate} = useMutation(deleteCategory)
 
   if (isLoading) {
     return <div>Loading...</div>
@@ -72,7 +79,7 @@ const category = () => {
                 </span>{' '}
               </td>
               <td>
-                <span className="p-3 flex">
+                <span className="p-3 flex" onClick={mutate}>
                   Delete <TrashIcon className="ml-2 w-5" />
                 </span>
               </td>

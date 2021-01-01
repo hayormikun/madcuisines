@@ -1,27 +1,55 @@
 import axios from 'axios'
 import { FormEvent, useState } from 'react'
-import { useMutation, UseMutationResult } from 'react-query'
+import { useMutation, UseMutationResult, useQuery } from 'react-query'
 import { WideButton } from '../../components/Button'
 import { Heading } from '../../components/Heading'
 import { Sidebar } from '../../components/Sidebar'
 import { IExtra } from '../../libs/interfaces/IExtras'
+import { ICategories } from '../../libs/interfaces/ICategory'
+import { yupResolver } from '@hookform/resolvers/yup'
+import * as yup from 'yup'
+import { useRef } from 'react'
+import { SubmitHandler, useForm } from 'react-hook-form'
 
-const createExtra = async (extra: IExtra): Promise<IExtra> => {
-  return await axios.post('madcuisne', extra)
+const createItem = async (item: FormInputs): Promise<FormInputs> => {
+  return await axios.post('http://api.madcuisines.com/extra/create', item)
 }
 
+const getCategories = async () => {
+  const res = await fetch('http://api.madcuisines.com/category/get-categories')
+  const data = await res.json()
+  return data.data
+}
+
+const schema = yup.object().shape({
+  name: yup.string().required().max(30),
+  categoryId: yup.string().required('Select a category'),
+  material: yup.string().required('Extra material is required').max(30),
+  description: yup.string().required('Extra description is required').max(200),
+  note: yup.string().required('Extra note is required').max(150),
+  unitOfMeasurement: yup.string().required('Unit of measurement is required').max(20),
+  quantityAvailable: yup.number().positive("Quantity must be greater than zero").integer('Quantity must be a whole number').required('Available Quantity is required'),
+  unitPrice: yup.number().positive('Price must be greater than zero').required('Extra price is required'),
+  unitSale: yup.number().positive('Unit sale must be greater than zero').required('Unit sale is required'),
+  falsePrice: yup.number().required('Discount price is required'),
+  status: yup.string().required(),
+  minOrder: yup.number().positive('Order must be greater than zero').integer('Quantity must be a whole number').required('Minimum order is required'),
+})
+
+type FormInputs = yup.InferType<typeof schema>
+
+
 const create = () => {
-  const [name, setName] = useState<string>('')
-  const [category, setCategory] = useState<string>('')
-  const [measurement, setMeasurement] = useState<string>('')
-  const [quantity, setQuantity] = useState<number>(0)
-  const [price, setPrice] = useState<number>(0)
-  const [bonus, setBonus] = useState<number>(0)
-  const [order, setOrder] = useState<number>(0)
-  const [description, setDescription] = useState<string>('')
-  const [note, setNote] = useState<string>('')
-  const [material, setMaterial] = useState<string>('')
-  // const [images, setImages] = useState<File[] | undefined>(undefined)
+  const imageRef = useRef<HTMLInputElement>(null)
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<IExtra>({
+    resolver: yupResolver(schema),
+  })
+  const { data: categories } = useQuery('categories', getCategories)
 
   const {
     mutate,
@@ -29,32 +57,18 @@ const create = () => {
     isError,
     error,
     isSuccess,
-  }: UseMutationResult<IExtra, Error, IExtra> = useMutation<
-    IExtra,
+  }: UseMutationResult<FormInputs, Error, FormInputs> = useMutation<
+    FormInputs,
     Error,
-    IExtra
-  >(createExtra)
+    FormInputs
+  >(createItem)
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-
-    // const extra: IExtra = {
-    //   name,
-    //   category,
-    //   measurement,
-    //   quantity,
-    //   price,
-    //   bonus,
-    //   order,
-    //   description,
-    //   note,
-    //   material,
-    //   images,
-    // }
-
-    // console.log(extra)
-    // mutate(extra)
+  const onSubmit: SubmitHandler<FormInputs> = (item: FormInputs) => {
+    console.log(item)
+    console.table(imageRef.current?.files)
+    mutate(item)
   }
+  
 
   return (
     <main className="lg:flex pt-20">
@@ -73,8 +87,7 @@ const create = () => {
             : ''}
           {isSuccess ? 'Extra created successfully' : ''}
           <form
-            onSubmit={handleSubmit}
-            action="POST"
+            onSubmit={handleSubmit(onSubmit)}
             encType="multipart/formdata"
             className="text-gray-700 font-semibold mx-auto w-6/12"
           >
@@ -86,121 +99,171 @@ const create = () => {
                 type={'text'}
                 id="name"
                 placeholder="Extra name"
-                value={name}
-                onChange={(e) => {
-                  setName(e.target.value)
-                }}
-                required
+                {...register('name')}
               />
+
+              {errors.name && (
+                <span className="text-red-500">{errors.name.message}</span>
+              )}
             </div>
 
             <div className="lg:flex lg:justify-between my-3 overflow-hidden">
-              <div className="grid gap-3 w-full my-3 mr-3">
+              <div className="grid gap-3 w-full my-3 mr-3 h-fit">
                 <label htmlFor="category">Categories:</label>
                 <select
                   className="p-2 rounded border-2"
                   id="category"
                   placeholder="Select Category"
-                  value={category}
-                  onChange={(e) => {
-                    setCategory(e.target.value)
-                  }}
-                  required
+                  {...register('categoryId')}
                 >
-                  <option value="Native">Native</option>
-                  <option value="Snacks">Snacks</option>
-                  <option value="Dessert">Dessert</option>
+                  {categories?.map((category: ICategories) => (
+                    <option className='h-fit w-fit' key={category.categoryId} value={category.categoryId}>
+                      {category.name}
+                    </option>
+                  ))}
                 </select>
+                {errors.categoryId && (
+                  <span className="text-red-500">
+                    {errors.categoryId.message}
+                  </span>
+                )}
               </div>
 
-              <div className="grid gap-3 w-full my-3 mr-3">
+              <div className="grid gap-3 w-full my-3 mr-3 h-fit">
                 <label htmlFor="measurement">Measuring Unit:</label>
                 <input
-                  className="p-2 w-full rounded border-2"
+                  className="p-2 w-full rounded border-2 h-fit"
                   type={'text'}
                   id="measurement"
                   placeholder="Measuring unit"
-                  value={measurement}
-                  onChange={(e) => {
-                    setMeasurement(e.target.value)
-                  }}
-                  required
+                  {...register('unitOfMeasurement')}
                 />
+                {errors.unitOfMeasurement && (
+                  <span className="text-red-500">
+                    {errors.unitOfMeasurement.message}
+                  </span>
+                )}
               </div>
 
-              <div className="grid gap-3 my-3 w-full">
+              <div className="grid gap-3 my-3 w-full h-fit">
                 <label htmlFor="quantity">Available Quantity:</label>
                 <input
-                  className="p-2 rounded border-2"
+                  className="p-2 rounded border-2 h-fit"
                   type={'number'}
                   id="quantity"
-                  placeholder="Extra quantity"
-                  value={quantity}
-                  onChange={(e) => {
-                    setQuantity(e.target.valueAsNumber)
-                  }}
+                  placeholder="Available Quantity"
+                  {...register('quantityAvailable')}
                 />
+                {errors.quantityAvailable && (
+                  <span className="text-red-500">
+                    {errors.quantityAvailable.message}
+                  </span>
+                )}
               </div>
             </div>
 
             <div className="lg:flex lg:justify-between my-3 overflow-hidden">
-              <div className="grid gap-3 w-full my-3 mr-3">
+              <div className="grid gap-3 w-full my-3 mr-3 h-fit">
                 <label htmlFor="price">Price:</label>
                 <input
-                  className="p-2 rounded w-full border-2"
+                  className="p-2 rounded w-full border-2 h-fit"
                   type={'number'}
                   id="price"
                   placeholder="Unit price"
-                  value={price}
-                  onChange={(e) => {
-                    setPrice(e.target.valueAsNumber)
-                  }}
+                  {...register('unitPrice')}
                 />
+                {errors.unitPrice && (
+                  <span className="text-red-500">
+                    {errors.unitPrice.message}
+                  </span>
+                )}
               </div>
 
-              <div className="grid gap-3 w-full my-3 mr-3">
-                <label htmlFor="bonus">Bonus Price:</label>
+              <div className="grid gap-3 w-full my-3 mr-3 h-fit">
+                <label htmlFor="bonus">Discount Price:</label>
                 <input
-                  className="p-2 rounded w-full border-2"
+                  className="p-2 rounded w-full border-2 h-fit"
                   type={'number'}
                   id="bonus"
-                  placeholder="Bonus price"
-                  value={bonus}
-                  onChange={(e) => {
-                    setBonus(e.target.valueAsNumber)
-                  }}
+                  placeholder="Discount price"
+                  {...register('falsePrice')}
                 />
+                {errors.falsePrice && (
+                  <span className="text-red-500">
+                    {errors.falsePrice.message}
+                  </span>
+                )}
               </div>
 
-              <div className="grid gap-3 my-3 w-full">
+              <div className="grid gap-3 my-3 w-full h-fit">
                 <label htmlFor="order" className="font-semibold">
                   Min Order:
                 </label>
                 <input
-                  className="p-2 rounded w-full border-2"
+                  className="p-2 rounded w-full border-2 h-fit"
                   type={'number'}
                   id="order"
-                  placeholder="Minimum order "
-                  value={order}
-                  onChange={(e) => {
-                    setOrder(e.target.valueAsNumber)
-                  }}
+                  placeholder="Minimum order"
+                  {...register('minOrder')}
                 />
+                {errors.minOrder && (
+                  <span className="text-red-500">
+                    {errors.minOrder.message}
+                  </span>
+                )}
               </div>
             </div>
+
+            <div className="lg:flex lg:justify-between my-3 overflow-hidden">
+              <div className="grid gap-3 w-full my-3 mr-3 h-fit">
+                <label htmlFor="status">Status:</label>
+                <input
+                  className="p-2 rounded w-full border-2 h-fit"
+                  type={'text'}
+                  id="status"
+                  placeholder="Extra status"
+                  {...register('status')}
+                />
+                {errors.status && (
+                  <span className="text-red-500">
+                    {errors.status.message}
+                  </span>
+                )}
+              </div>
+
+              <div className="grid gap-3 my-3 w-full h-fit">
+                <label htmlFor="sale" className="font-semibold">
+                  Unit Sale:
+                </label>
+                <input
+                  className="p-2 rounded w-full border-2 h-fit"
+                  type={'number'}
+                  id="sale"
+                  placeholder="Unit sale"
+                  {...register('unitSale')}
+                />
+                {errors.unitSale && (
+                  <span className="text-red-500">
+                    {errors.unitSale.message}
+                  </span>
+                )}
+              </div>
+            </div>
+
             <div className="lg:flex lg:justify-between">
-              <div className="grid gap-3 w-full my-3 mr-3">
+              <div className="grid gap-3 w-full my-3 mr-3 h-fit">
                 <label htmlFor="description">Description:</label>
                 <textarea
-                  className="p-3  w-full rounded border-2"
+                  className="p-3  w-full rounded border-2 h-fit"
                   id="description"
                   placeholder="Extra description"
-                  value={description}
-                  onChange={(e) => {
-                    setDescription(e.target.value)
-                  }}
-                  required
+                  {...register('description')}
                 ></textarea>
+                {errors.description && (
+                  <span className="text-red-500">
+                    {errors.description.message}
+                  </span>
+                )}
               </div>
 
               <div className="grid gap-3 my-3 w-full">
@@ -209,11 +272,7 @@ const create = () => {
                   className="p-3  w-full rounded border-2"
                   id="note"
                   placeholder="Extra Note"
-                  value={note}
-                  onChange={(e) => {
-                    setNote(e.target.value)
-                  }}
-                  required
+                  {...register('note')}
                 ></textarea>
               </div>
             </div>
@@ -225,28 +284,26 @@ const create = () => {
                   className="p-2 w-full rounded border-2"
                   type={'text'}
                   id="material"
-                  placeholder="Extra Material "
-                  value={material}
-                  onChange={(e) => {
-                    setMaterial(e.target.value)
-                  }}
-                  required
+                  placeholder="Extra Material"
+                  {...register('material')}
                 />
+                {errors.material && (
+                  <span className="text-red-500">
+                    {errors.material.message}
+                  </span>
+                )}
               </div>
 
-              {/* <div className="grid gap-3 my-3 w-full">
-                <label htmlFor="images">Extra Images:</label>
+              <div className="grid gap-3 my-3 w-full">
+                <label htmlFor="images">Choose an image or images:</label>
                 <input
                   className="p-2  w-full rounded border-2"
                   type={'file'}
-                  value={images}
-                  onChange={(e) => {
-                    setImages(e.target.files)
-                  }}
+                  id="images"
+                  ref={imageRef}
                   multiple
-                  required
                 />
-              </div> */}
+              </div>
             </div>
 
             {isLoading ? (

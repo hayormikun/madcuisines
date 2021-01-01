@@ -1,12 +1,10 @@
 import axios from 'axios'
-import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { QueryCache, useQuery } from 'react-query'
 import { DelButton, EditButton } from '../../components/Button'
 import { Heading } from '../../components/Heading'
 import { Sidebar } from '../../components/Sidebar'
-import { IProducts } from '../../libs/interfaces/IProducts'
 
 const fetchProduct = async (id: string | string[] | undefined) => {
   if (typeof id === 'string') {
@@ -16,7 +14,7 @@ const fetchProduct = async (id: string | string[] | undefined) => {
     if (res.ok) {
       return res.json()
     }
-    throw new Error('error fetching user with id')
+    throw new Error('error fetching product with id')
   }
 
   throw new Error('invalid id')
@@ -48,8 +46,17 @@ const Details = () => {
     return alert(error)
   }
 
+  const router = useRouter()
+
   const handleDelete = async () => {
-    await axios.delete('')
+    await axios
+      .delete(`/product/delete-product/${id}`)
+      .then(() => {
+        router.push('/products/index')
+      })
+      .catch(() => {
+        throw new Error('unable to delete')
+      })
   }
 
   return (
@@ -65,36 +72,25 @@ const Details = () => {
 
         {product && (
           <div className="w-10/12 mx-auto">
-            <div className="flex flex-col md:grid grid-cols-3 shadow-lg">
+            <div className="flex flex-col md:grid grid-cols-3 shadow-md">
               <div className="col-span-2 overflow-hidden h-auto">
                 <div className="hidden">
                   {(imageSrc = baseUrl + product?.data.images[0].imageUrl)}
-                  
                 </div>
-
-                {/* <Image
-                  src={imageSrc}
-                  height={'510px'}
-                  width={'670px'}
-                  objectFit="cover"
-                  alt={product?.data.name}
-                  className="w-full h-full overflow-hidden"
-                /> */}
-
                 <img
                   src={imageSrc}
                   alt={product?.data.name}
-                  className="w-auto md:w-full h-auto"
+                  className="w-auto md:w-full h-auto md:h-[600px]"
                 />
               </div>
-              <div className="col-span-1 bg-white pl-10 pt-5 h-auto">
-                <h2 className="text-2xl text-gray-700 font-bold my-3">
+              <div className="col-span-1 bg-white pl-10 py-10 h-auto">
+                <h2 className="text-3xl capitalize text-gray-700 font-bold my-3">
                   {product?.data.name}
                 </h2>
 
                 <div className="my-3">
-                  <h3 className="text-md text-gray-700 font-semibold mb-2">
-                    Description
+                  <h3 className="text-md text-gray-700 font-semibold">
+                    Description:
                   </h3>
                   <p className="text-gray-600">{product?.data.description}</p>
                 </div>
@@ -124,7 +120,7 @@ const Details = () => {
                     </span>
                   </li>
                   <li className="mb-3">
-                    Bonus Price:{' '}
+                    Discount Price:{' '}
                     <span className="text-gray-600">
                       ${product?.data.falsePrice}
                     </span>
@@ -138,13 +134,13 @@ const Details = () => {
                 </ul>
 
                 <div className="flex justify-start items-center my-3">
-                  <Link href={`/products/${product?.productId}`}>
+                  <Link href={`/products/update/${IDBKeyRange}`}>
                     <a className="mr-2">
                       <EditButton name="edit" />
                     </a>
                   </Link>
 
-                  <a className="">
+                  <a className="mr-2" onClick={handleDelete}>
                     <DelButton name="delete" />
                   </a>
                 </div>

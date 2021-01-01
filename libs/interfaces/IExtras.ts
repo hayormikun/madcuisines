@@ -21,14 +21,16 @@ export interface IExtras {
 
 export interface IExtra {
     name: string
-    category: string
-    measurement: string
-    quantity: number
-    price: number
-    bonus: number
-    order: number
     description: string
-    note: string
+    images: File
+    categoryId: string 
+    unitOfMeasurement: string
+    quantityAvailable: string
+    unitPrice: string
+    unitSale: string
+    status: string
     material: string
-    images: File[] | undefined
+    note: string
+    falsePrice: string
+    minOrder: string
 }

@@ -10,12 +10,14 @@ export interface IProduct {
     name: string
     description: string
     images: File
-    category: {
-        name: string
-    }
+    categoryId: string 
     unitOfMeasurement: string
     quantityAvailable: string
     unitPrice: string
+    unitSale: string
+    status: string
+    material: string
+    note: string
     falsePrice: string
     minOrder: string
 }
