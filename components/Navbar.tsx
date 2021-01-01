@@ -32,8 +32,8 @@ export const Navbar = () => {
             </Link>
             <a className="mx-5"><Button name="log out" color="teal"/></a>
         </ul>
-
-        <div className="md:hidden">
+      </div>
+        {/* <div className="md:hidden">
 
         </div>
       </div>
@@ -51,7 +51,7 @@ export const Navbar = () => {
               <a className="mx-5 py-2 hover:text-gray-800">Category</a>
             </Link>
             <a className="mx-5"><Button name="logout" color="teal"/></a>
-      </ul>
+      </ul> */}
     </nav>
   )
 }

@@ -17,6 +17,24 @@ const create = () => {
   const [material, setMaterial] = useState("")
   const [images, setImages] = useState('')
 
+  const handleSubmit = (e) =>{
+    e.preventDefault()
+
+    const extra = {
+      name,
+      category,
+      measurement,
+      quantity,
+      price,
+      bonus,
+      order,
+      description,
+      note,
+      material,
+      images,
+    }
+  }
+
   return (
     <main className="lg:flex">
         <Sidebar view="Extras" create="Extra" viewLink="/extras" createLink="/extras/create" />
@@ -24,7 +42,7 @@ const create = () => {
         <div className="mt-5 w-full lg:w-10/12">
             <Heading heading='Create Extra' />
               <div className="grid">
-              <form action="POST" encType="multipart/formdata" className="text-gray-700 font-semibold mx-auto w-6/12">
+              <form onSubmit={handleSubmit} action="POST" encType="multipart/formdata" className="text-gray-700 font-semibold mx-auto w-6/12">
                 <div className="grid my-3 gap-3">
                     <label htmlFor="name">Extra Name:</label>
                     <input className="p-2 w-full rounded border-2" type={"text"} id="name" placeholder="Extra name" value={name} onChange={(e)=> {setName(e.target.value)}} required/>

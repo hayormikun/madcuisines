@@ -4,8 +4,8 @@ import { Card } from "../../components/Card"
 import { Heading } from "../../components/Heading"
 import { Sidebar } from "../../components/Sidebar"
 
-
 const products = () => {
+  
   return (
     <main className="lg:flex">
       <Sidebar view="Products" create="Product" viewLink="/products" createLink="/products/create" />

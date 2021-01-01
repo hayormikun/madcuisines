@@ -1,9 +1,23 @@
 import Image from "next/image"
+import { useState } from "react"
 import { WideButton } from "../components/Button"
 import { Heading } from "../components/Heading"
 
 
 const login = () => {
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+
+  const handleLogin = (e) => {
+    e.preventDefault()
+
+    const authUser = {
+      email,
+      password,
+    }
+
+  }
+
   return (
     <main className="flex flex-col items-center justify-center py-5 mb-28">
         <Heading heading="login" />
@@ -12,9 +26,11 @@ const login = () => {
                 <Image src={'/img/logo.png'} width='100px' height="100px" alt="logo" />
             </div>
             <div className="my-5">
-                <input className="block w-full font-semibold rounded py-2 px-3 my-5 shadow-sm bg-gray-200" type={"email"} name="email" placeholder="email"/>
-                <input className="block w-full font-semibold rounded py-2 px-3 my-5 shadow-sm bg-gray-200" type={"password"} name="password" placeholder="****"/>
+              <form onSubmit={handleLogin} action="" method="post">
+                <input className="block w-full font-semibold rounded py-2 px-3 my-5 shadow-sm bg-gray-200" type={"email"} name="email" placeholder="email" value={email} onChange={(e)=>setEmail(e.target.value)}/>
+                <input className="block w-full font-semibold rounded py-2 px-3 my-5 shadow-sm bg-gray-200" type={"password"} name="password" placeholder="****" value={password} onChange={(e)=>setPassword(e.target.value)}/>
                 <WideButton name="login" />
+              </form>
             </div>
             
         </div>

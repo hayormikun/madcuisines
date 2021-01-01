@@ -5,6 +5,7 @@ import { Card } from '../components/Card'
 import { Heading } from '../components/Heading'
 
 
+
 const Home: NextPage = () => {
   return (
     <div className="">

@@ -16,6 +16,26 @@ const create = () => {
   const [material, setMaterial] = useState("")
   const [images, setImages] = useState('')
 
+  const handleSubmit = (e) =>{
+    e.preventDefault()
+
+    const product = {
+      name,
+      category,
+      measurement,
+      quantity,
+      price,
+      bonus,
+      order,
+      description,
+      note,
+      material,
+      images,
+    }
+
+  alert(`${product.name} product added`)
+  }
+
   return (
     <main className="lg:flex">
         <Sidebar view="Products" create="Product" viewLink="/products" createLink="/products/create" />
@@ -24,7 +44,7 @@ const create = () => {
             <Heading heading='Create Product' />
 
               <div className="grid">
-              <form action="POST" encType="multipart/formdata" className="text-gray-700 font-semibold mx-auto w-6/12">
+              <form onSubmit={handleSubmit} action="POST" encType="multipart/formdata" className="text-gray-700 font-semibold mx-auto w-6/12">
                 <div className="grid my-3 gap-3">
                     <label htmlFor="name">Product Name:</label>
                     <input className="p-2 w-full rounded border-2" type={"text"} id="name" placeholder="Product name " value={name} onChange={(e)=> {setName(e.target.value)}} required/>
