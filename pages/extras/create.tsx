@@ -17,8 +17,7 @@ const create = () => {
   const [material, setMaterial] = useState("")
   const [images, setImages] = useState('')
 
-  const handleSubmit = (e) =>{
-    e.preventDefault()
+  const handleSubmit = () =>{
 
     const extra = {
       name,
