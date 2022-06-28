@@ -8,8 +8,8 @@ const login = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
 
-  const handleLogin = (e) => {
-    e.preventDefault()
+  const handleLogin = () => {
+    
 
     const authUser = {
       email,
