@@ -6,7 +6,7 @@ import { Button } from "./Button"
 
 
 export const Navbar = () => {
-  const [isOpen, setIsOpen] = useState(false)
+  // const [isOpen, setIsOpen] = useState(false)
 
   return (
     <nav className="flex h-[80px] w-full items-center">
