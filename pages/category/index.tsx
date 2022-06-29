@@ -5,7 +5,7 @@ import { Sidebar } from '../../components/Sidebar'
 
 const category = () => {
   return (
-    <main className='lg:flex'>
+    <main className='lg:flex pt-20'>
       <Sidebar view='Categories' create='Category' viewLink='/category' createLink='/category/create' />
         <div className="mt-5 w-full lg:w-10/12">
           <Heading heading='Categories' />

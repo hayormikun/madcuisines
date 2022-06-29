@@ -7,7 +7,7 @@ import { Sidebar } from "../../components/Sidebar"
 const products = () => {
   
   return (
-    <main className="lg:flex">
+    <main className="lg:flex pt-20">
       <Sidebar view="Products" create="Product" viewLink="/products" createLink="/products/create" />
       <div className="mt-5 w-full lg:w-10/12">
         <Heading heading='Products'/>
