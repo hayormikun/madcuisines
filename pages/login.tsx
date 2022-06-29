@@ -4,14 +4,14 @@ import { WideButton } from "../components/Button"
 import { Heading } from "../components/Heading"
 
 
-const login = (e: FormEvent<HTMLFormElement>) => {
+const login = () => {
 
-  e.preventDefault()
+  
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
 
-  const handleLogin = () => {
-    
+  const handleLogin = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
 
     const authUser = {
       email,
