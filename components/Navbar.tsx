@@ -9,6 +9,10 @@ export const Navbar = () => {
   const handleHamburger = () => {
     setIsOpen(!isOpen)
   }
+
+  const handleClose = ()=>{
+    setIsOpen(!isOpen)
+  }
   
   return (
     <nav className="w-screen h-[80px] z-20 fixed drop-shadow-sm">
@@ -41,19 +45,19 @@ export const Navbar = () => {
       </div>
       <ul className={!isOpen ? "hidden" : "absolute flex flex-col mt-3 py-3 font-semibold bg-gray-300 text-teal-500 w-full px-8 md:hidden"}>
       <Link href={"/products"}>
-              <a className="py-3 border-b-2 border-teal-500  hover:text-teal-700 hover:border-teal-700">Products</a>
+              <a onClick={handleClose} className="py-3 border-b-2 border-teal-500  hover:text-teal-700 hover:border-teal-700">Products</a>
             </Link>
             <Link href={"/extras"}>
-              <a className="py-3 border-b-2 border-teal-500 hover:text-teal-700 hover:border-teal-700">Extras</a>
+              <a onClick={handleClose} className="py-3 border-b-2 border-teal-500 hover:text-teal-700 hover:border-teal-700">Extras</a>
             </Link>     
             <Link href={"/orders"}>
-              <a className="py-3 border-b-2 border-teal-500 hover:text-teal-700 hover:border-teal-700">Orders</a>
+              <a onClick={handleClose} className="py-3 border-b-2 border-teal-500 hover:text-teal-700 hover:border-teal-700">Orders</a>
             </Link>       
-            <Link href={"/category"}>
-              <a className="py-3 border-b-2 border-teal-500 hover:text-teal-700 hover:border-teal-700">Category</a>
+            <Link onClick={handleClose} href={"/category"}>
+              <a onClick={handleClose} className="py-3 border-b-2 border-teal-500 hover:text-teal-700 hover:border-teal-700">Category</a>
             </Link>
 
-            <a className="py-3"><WideButton name="logout" /></a>
+            <a onClick={handleClose} className="py-3"><WideButton name="logout" /></a>
       </ul>
     </nav>
   )
