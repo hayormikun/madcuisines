@@ -13,7 +13,7 @@ const Home: NextPage = () => {
         <title>Madcuisnes | Home</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <main className="flex flex-col items-center justify-center pt-20 pb-5">
+      <main className="flex flex-col items-center justify-center pt-28 mb-5">
         <Heading heading='Dashboard' />
         <div className="grid md:grid-cols-2 gap-12">
           <Card image='/img/rice.jpeg' alt='products' heading="products" description="available products to be sold" link="/products"/>

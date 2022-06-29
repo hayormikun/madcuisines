@@ -15,7 +15,7 @@ export const Navbar = () => {
   }
   
   return (
-    <nav className="w-screen h-[80px] z-20 fixed drop-shadow-sm">
+    <nav className="w-screen bg-gray-100 h-[80px] z-20 fixed">
       <div className="flex justify-between pt-3 mx-7 items-center">
         <Link href={'/'}>
             <a>
