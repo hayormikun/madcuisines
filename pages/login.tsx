@@ -1,10 +1,12 @@
 import Image from "next/image"
-import { useState } from "react"
+import { FormEvent, useState } from "react"
 import { WideButton } from "../components/Button"
 import { Heading } from "../components/Heading"
 
 
-const login = () => {
+const login = (e: FormEvent<HTMLFormElement>) => {
+
+  e.preventDefault()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
 

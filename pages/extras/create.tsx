@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { FormEvent, useState } from "react"
 import { WideButton } from "../../components/Button"
 import { Heading } from "../../components/Heading"
 import { Sidebar } from "../../components/Sidebar"
@@ -17,7 +17,8 @@ const create = () => {
   const [material, setMaterial] = useState("")
   const [images, setImages] = useState('')
 
-  const handleSubmit = () =>{
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) =>{
+    e.preventDefault()
 
     const extra = {
       name,
@@ -32,6 +33,8 @@ const create = () => {
       material,
       images,
     }
+
+    console.log(extra)
   }
 
   return (

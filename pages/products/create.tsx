@@ -1,9 +1,11 @@
-import { useState } from "react"
+import { FormEvent, useState } from "react"
 import { WideButton } from "../../components/Button"
 import { Heading } from "../../components/Heading"
 import { Sidebar } from "../../components/Sidebar"
 
 const create = () => {
+  
+
   const [name, setName] = useState("")
   const [category, setCategory] = useState("")
   const [measurement, setMeasurement] = useState("")
@@ -16,8 +18,8 @@ const create = () => {
   const [material, setMaterial] = useState("")
   const [images, setImages] = useState('')
 
-  const handleSubmit = () =>{
-
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) =>{
+    e.preventDefault()
     const product = {
       name,
       category,
@@ -32,7 +34,7 @@ const create = () => {
       images,
     }
 
-  alert(`${product.name} product added`)
+  console.log(product)
   }
 
   return (

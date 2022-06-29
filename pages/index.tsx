@@ -19,7 +19,7 @@ const Home: NextPage = () => {
           <Card image='/img/rice.jpeg' alt='products' heading="products" description="available products to be sold" link="/products"/>
           <Card image='/img/EBA.jpeg' alt='extras' heading="extras" description="available extras to be sold" link="/extras"/>
           <Card image='/img/orders.png' alt='orders'  heading="orders" description="customers' orders" link="/orders"/>
-          <Card image='/img/category.jpeg' alt='category' heading="category" description="products categories" link="/categories"/>
+          <Card image='/img/category.jpeg' alt='category' heading="category" description="products categories" link="/category"/>
         </div>
       </main>
 
