@@ -36,7 +36,7 @@ export const Navbar = () => {
             <Link href={"/category"}>
               <a className="mx-5 py-2 hover:text-gray-800">Category</a>
             </Link>
-            <a className="mx-5"><Button name="log out" color="teal"/></a>
+            <a className="mx-5"><Button name="log out"/></a>
         </ul>
 
         <div className="relative md:hidden py-2 px-3 bg-gray-300 hover:cursor-pointer" onClick={handleHamburger}>
