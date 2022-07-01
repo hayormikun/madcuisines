@@ -47,7 +47,7 @@ const products = ({initialData}: InitialProps) => {
         <Heading heading='Products'/>
         
         <div className="grid md:grid-cols-4 gap-6 mx-5">
-          {products.map((product: object)=>(
+          {/* {products.map((product: object)=>(
             <div key={product.id} className="mx-auto">
             <Card image={product.image} description={product.description} heading={product.name} link={`/products/${product.id}`} alt={product.name} />
             <div className="flex justify-start items-center py-3">
@@ -63,7 +63,7 @@ const products = ({initialData}: InitialProps) => {
               </Link>
             </div>
           </div>
-          ))}
+          ))} */}
 
         </div>
         <div className="my-5 flex justify-center">
