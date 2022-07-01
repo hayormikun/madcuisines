@@ -11,15 +11,15 @@ export const Navbar = () => {
   }
 
   const handleClose = ()=>{
-    setIsOpen(!isOpen)
+    setIsOpen(false)
   }
   
   return (
-    <nav className="w-screen bg-gray-100 h-[80px] z-20 fixed">
-      <div className="flex justify-between pt-3 mx-7 items-center">
+    <nav className="w-screen bg-gray-100 h-[100px] z-20 fixed">
+      <div className="flex justify-between py-3 mx-7 items-center">
         <Link href={'/'}>
-            <a>
-                <Image src={'/img/logo.png'} height="70px" width="70px" alt="logo" />
+            <a onClick={handleClose}>
+                <Image src={'/img/logo.png'} height="80px" width="80px" alt="logo" />
             </a>
         </Link>
         
@@ -43,7 +43,7 @@ export const Navbar = () => {
           {!isOpen ? <MenuIcon className="w-5" /> : <XIcon className="w-5"/>} 
         </div>
       </div>
-      <ul className={!isOpen ? "hidden" : "absolute flex flex-col mt-3 py-3 font-semibold bg-gray-300 text-teal-500 w-full px-8 md:hidden"}>
+      <ul className={!isOpen ? "hidden" : "absolute top-24 flex flex-col py-3 font-semibold bg-gray-300 text-teal-500 w-full px-8 md:hidden"}>
       <Link href={"/products"}>
               <a onClick={handleClose} className="py-3 border-b-2 border-teal-500  hover:text-teal-700 hover:border-teal-700">Products</a>
             </Link>

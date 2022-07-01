@@ -1,11 +1,45 @@
+import axios from "axios"
+import { GetServerSideProps } from "next"
 import Link from "next/link"
+import { useQuery } from "react-query"
 import { Button, DelButton } from "../../components/Button"
 import { Card } from "../../components/Card"
 import { Heading } from "../../components/Heading"
 import { Sidebar } from "../../components/Sidebar"
 
-const products = () => {
-  
+
+const fetchProducts = async()=>{
+  const res = await axios.get('http://api.madcuisines.com/product/get-products')
+  const data = res.data
+  return data
+}
+
+export const getServerSideProps: GetServerSideProps = async () => {
+
+  return {
+    props: {
+      initialData:  await fetchProducts()
+    }
+  }
+}
+
+interface InitialProps {
+  initialData: object; 
+}
+
+const products = ({initialData}: InitialProps) => {
+  const {data: products, isLoading, isError, error} = useQuery('product', fetchProducts, {
+    initialData: initialData
+  })
+
+  if (isLoading) {
+    return <div>Loading...</div>
+  }
+
+  if(isError){
+    return alert(error)
+  }
+
   return (
     <main className="lg:flex pt-20">
       <Sidebar view="Products" create="Product" viewLink="/products" createLink="/products/create" />
@@ -13,8 +47,9 @@ const products = () => {
         <Heading heading='Products'/>
         
         <div className="grid md:grid-cols-4 gap-6 mx-5">
-          <div className="product mx-auto">
-            <Card image='/img/rice.jpeg' description='rice is sweet' heading='big rice' link='/products/1' alt='rice' />
+          {products.map((product: object)=>(
+            <div key={product.id} className="mx-auto">
+            <Card image={product.image} description={product.description} heading={product.name} link={`/products/${product.id}`} alt={product.name} />
             <div className="flex justify-start items-center py-3">
               <Link href={"/"}>
                 <a className="mr-2">
@@ -28,6 +63,8 @@ const products = () => {
               </Link>
             </div>
           </div>
+          ))}
+
         </div>
         <div className="my-5 flex justify-center">
           <button className="mx-3 py-2 px-3 capitalize bg-gray-200 text-gray-700 border-2 rounded font-semibold">Previous</button>
