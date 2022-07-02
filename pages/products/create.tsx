@@ -2,25 +2,27 @@ import { FormEvent, useState } from "react"
 import { WideButton } from "../../components/Button"
 import { Heading } from "../../components/Heading"
 import { Sidebar } from "../../components/Sidebar"
+import { IProduct } from "../../libs/interfaces/IProducts"
 
 const create = () => {
   
 
-  const [name, setName] = useState("")
-  const [category, setCategory] = useState("")
-  const [measurement, setMeasurement] = useState("")
-  const [quantity, setQuantity] = useState(0)
-  const [price, setPrice] = useState(0)
-  const [bonus, setBonus] = useState(0)
-  const [order, setOrder] = useState(0)
-  const [description, setDescription] = useState("")
-  const [note, setNote] = useState("")
-  const [material, setMaterial] = useState("")
-  const [images, setImages] = useState('')
+  const [name, setName] = useState<string>("")
+  const [category, setCategory] = useState<string>("Select Category")
+  const [measurement, setMeasurement] = useState<string>("")
+  const [quantity, setQuantity] = useState<number>(0)
+  const [price, setPrice] = useState<number>(0)
+  const [bonus, setBonus] = useState<number>(0)
+  const [order, setOrder] = useState<number>(0)
+  const [description, setDescription] = useState<string>("")
+  const [note, setNote] = useState<string>("")
+  const [material, setMaterial] = useState<string>("")
+  const [images, setImages] = useState([])
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) =>{
     e.preventDefault()
-    const product = {
+
+    const product: IProduct = {
       name,
       category,
       measurement,
@@ -55,6 +57,7 @@ const create = () => {
                   <div className="grid gap-3 w-full my-3 mr-3">
                     <label htmlFor="category">Categories:</label>
                     <select className="p-2 rounded border-2" id="category" placeholder="Select Category" value={category} onChange={(e)=> {setCategory(e.target.value)}} required>
+                      <option disabled>Select Category</option>
                       <option value="Native">Native</option>
                       <option value="Snacks">Snacks</option>
                       <option value="Dessert">Dessert</option>
@@ -108,7 +111,7 @@ const create = () => {
 
                   <div className="grid gap-3 my-3 w-full">
                   <label htmlFor="images">Product Images:</label>
-                    <input className="p-2  w-full rounded border-2" type={"file"} id="images" value={images} onChange={(e)=>{setImages(e.target.value)}} multiple required/>
+                    <input className="p-2  w-full rounded border-2" type={"file"} id="images" value={images} multiple required/>
                   </div>
                 </div>
                 

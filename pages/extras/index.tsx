@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { Button, DelButton } from "../../components/Button"
+import { DelButton, EditButton } from "../../components/Button"
 import { Card } from "../../components/Card"
 import { Heading } from "../../components/Heading"
 import { Sidebar } from '../../components/Sidebar'
@@ -18,7 +18,7 @@ const extras = () => {
             <div className="flex justify-start items-center py-3">
               <Link href={"/"}>
                 <a className="mr-2">
-                <Button name="edit"/>
+                <EditButton name="edit"/>
                 </a>
               </Link>
               <Link href={"/"}>

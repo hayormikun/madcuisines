@@ -1,20 +1,23 @@
 import axios from "axios"
 import { GetServerSideProps } from "next"
 import Link from "next/link"
-import { useQuery } from "react-query"
+import { useQuery, UseQueryResult } from "react-query"
 import { Button, DelButton } from "../../components/Button"
 import { Card } from "../../components/Card"
 import { Heading } from "../../components/Heading"
 import { Sidebar } from "../../components/Sidebar"
+import { IProducts } from "../../libs/interfaces/IProducts"
 
+export interface ProductProps {
+  initialData: IProducts[];
+}
 
 const fetchProducts = async()=>{
   const res = await axios.get('http://api.madcuisines.com/product/get-products')
-  const data = res.data
-  return data
+  return res.data
 }
 
-export const getServerSideProps: GetServerSideProps = async () => {
+export const getServerSideProps: GetServerSideProps<ProductProps> = async (context) => {
 
   return {
     props: {
@@ -23,11 +26,7 @@ export const getServerSideProps: GetServerSideProps = async () => {
   }
 }
 
-interface InitialProps {
-  initialData: object; 
-}
-
-const products = ({initialData}: InitialProps) => {
+const products = ({initialData}: ProductProps) => {
   const {data: products, isLoading, isError, error} = useQuery('product', fetchProducts, {
     initialData: initialData
   })
@@ -47,9 +46,9 @@ const products = ({initialData}: InitialProps) => {
         <Heading heading='Products'/>
         
         <div className="grid md:grid-cols-4 gap-6 mx-5">
-          {/* {products.map((product: object)=>(
-            <div key={product.id} className="mx-auto">
-            <Card image={product.image} description={product.description} heading={product.name} link={`/products/${product.id}`} alt={product.name} />
+          {products.map((product: IProducts)=>(
+            <div key={product?.id} className="mx-auto">
+            <Card image={product?.images} description={product?.description} heading={product?.name} link={`/products/${product?.id}`} alt={product?.name} />
             <div className="flex justify-start items-center py-3">
               <Link href={"/"}>
                 <a className="mr-2">
@@ -63,7 +62,7 @@ const products = ({initialData}: InitialProps) => {
               </Link>
             </div>
           </div>
-          ))} */}
+          ))}
 
         </div>
         <div className="my-5 flex justify-center">
