@@ -2,8 +2,6 @@ import { FormEvent, useState } from "react"
 import { WideButton } from "../../../components/Button"
 import { Heading } from "../../../components/Heading"
 import { Sidebar } from "../../../components/Sidebar"
-import { IProducts } from "../../../libs/interfaces/IProducts"
-
 
 const update = () => {
   const [name, setName] = useState<string>("")
@@ -16,12 +14,12 @@ const update = () => {
   const [description, setDescription] = useState<string>("")
   const [note, setNote] = useState<string>("")
   const [material, setMaterial] = useState<string>("")
-  const [images, setImages] = useState([])
+  const [images, setImages] = useState('')
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) =>{
     e.preventDefault()
 
-    const product: IProducts = {
+    const product = {
       name,
       category,
       measurement,
