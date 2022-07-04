@@ -1,7 +1,7 @@
 import Image from "next/image"
 import Link from "next/link"
 import { useState } from "react"
-import { Button, LogOutButton, WideButton } from "./Button"
+import { LogOutButton, WideButton } from "./Button"
 import { MenuIcon, XIcon } from '@heroicons/react/outline'
 
 export const Navbar = () => {
