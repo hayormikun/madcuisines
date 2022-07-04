@@ -10,7 +10,7 @@ export interface IExtras {
     description: string
     note: string
     material: string
-    images?: []
+    images: []
 }
 
 export interface IExtra {
@@ -24,5 +24,5 @@ export interface IExtra {
     description: string
     note: string
     material: string
-    images?: []
+    images: []
 }

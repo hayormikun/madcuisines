@@ -2,7 +2,7 @@ import { FormEvent, useState } from "react"
 import { WideButton } from "../../components/Button"
 import { Heading } from "../../components/Heading"
 import { Sidebar } from "../../components/Sidebar"
-import { IExtra } from "../../libs/interfaces/IExtras"
+
 
 
 const create = () => {
@@ -16,12 +16,12 @@ const create = () => {
   const [description, setDescription] = useState<string>("")
   const [note, setNote] = useState<string>("")
   const [material, setMaterial] = useState<string>("")
-  const [images, setImages] = useState([])
+  const [images, setImages] = useState('')
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) =>{
     e.preventDefault()
 
-    const extra: IExtra = {
+    const extra = {
       name,
       category,
       measurement,
