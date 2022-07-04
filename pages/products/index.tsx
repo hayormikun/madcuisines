@@ -45,7 +45,7 @@ const products = ({initialData}: ProductProps) => {
       <div className="mt-5 w-full lg:w-10/12">
         <Heading heading='Products'/>
         
-        <div className="grid md:grid-cols-4 gap-6 mx-5">
+        {/* <div className="grid md:grid-cols-4 gap-6 mx-5">
           {products.map((product: IProducts)=>(
             <div key={product?.id} className="mx-auto">
             <Card image={product?.images} description={product?.description} heading={product?.name} link={`/products/${product?.id}`} alt={product?.name} />
@@ -64,7 +64,7 @@ const products = ({initialData}: ProductProps) => {
           </div>
           ))}
 
-        </div>
+        </div> */}
         <div className="my-5 flex justify-center">
           <button className="mx-3 py-2 px-3 capitalize bg-gray-200 text-gray-700 border-2 rounded font-semibold">Previous</button>
           <button className="mx-3 py-2 px-6 capitalize bg-gray-200 text-gray-700 border-2 rounded font-semibold">Next</button>
