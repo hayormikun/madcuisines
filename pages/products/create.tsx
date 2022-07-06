@@ -22,7 +22,7 @@ const create = () => {
   const [description, setDescription] = useState<string>("")
   const [note, setNote] = useState<string>("")
   const [material, setMaterial] = useState<string>("")
-  const [images, setImages] = useState<File[] | undefined>(undefined)
+  // const [images, setImages] = useState<File[] | undefined>(undefined)
 
   const { mutate, isLoading,isError, error, isSuccess }: UseMutationResult<IProduct, Error, IProduct> = useMutation<IProduct, Error, IProduct>(createProduct)
 
@@ -30,22 +30,22 @@ const create = () => {
   const handleSubmit = (e: FormEvent<HTMLFormElement>) =>{
     e.preventDefault()
 
-    const product: IProduct = {
-      name,
-      category,
-      measurement,
-      quantity,
-      price,
-      bonus,
-      order,
-      description,
-      note,
-      material,
-      images
-    }
+    // const product: IProduct = {
+    //   name,
+    //   category,
+    //   measurement,
+    //   quantity,
+    //   price,
+    //   bonus,
+    //   order,
+    //   description,
+    //   note,
+    //   material,
+    //   images
+    // }
 
-  console.log(product)
-  mutate(product)
+  // console.log(product)
+  // mutate(product)
   }
 
   return (
@@ -120,10 +120,10 @@ const create = () => {
                     <input className="p-2 w-full rounded border-2" type={"text"} id="material" placeholder="Product Material " value={material} onChange={(e)=> {setMaterial(e.target.value)}} required/>
                   </div>
 
-                  <div className="grid gap-3 my-3 w-full">
+                  {/* <div className="grid gap-3 my-3 w-full">
                   <label htmlFor="images">Product Images:</label>
                     <input className="p-2  w-full rounded border-2" type={"file"} id="images" value={images} onChange={(e)=>{setImages(e.target.files)}} multiple required/>
-                  </div>
+                  </div> */}
                 </div>
                 
                 <WideButton name="Create Product" />

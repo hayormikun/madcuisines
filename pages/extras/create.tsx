@@ -21,29 +21,29 @@ const create = () => {
   const [description, setDescription] = useState<string>("")
   const [note, setNote] = useState<string>("")
   const [material, setMaterial] = useState<string>("")
-  const [images, setImages] = useState<File[] | undefined>(undefined)
+  // const [images, setImages] = useState<File[] | undefined>(undefined)
 
   const { mutate, isLoading,isError, error, isSuccess }: UseMutationResult<IExtra, Error, IExtra> = useMutation<IExtra, Error, IExtra>(createExtra)
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) =>{
     e.preventDefault()
 
-    const extra: IExtra = {
-      name,
-      category,
-      measurement,
-      quantity,
-      price,
-      bonus,
-      order,
-      description,
-      note,
-      material,
-      images,
-    }
+    // const extra: IExtra = {
+    //   name,
+    //   category,
+    //   measurement,
+    //   quantity,
+    //   price,
+    //   bonus,
+    //   order,
+    //   description,
+    //   note,
+    //   material,
+    //   // images,
+    // }
 
-    console.log(extra)
-    mutate(extra)
+    // console.log(extra)
+    // mutate(extra)
   }
 
   return (
@@ -116,10 +116,10 @@ const create = () => {
                     <input className="p-2 w-full rounded border-2" type={"text"} id="material" placeholder="Extra Material " value={material} onChange={(e)=> {setMaterial(e.target.value)}} required/>
                   </div>
 
-                  <div className="grid gap-3 my-3 w-full">
+                  {/* <div className="grid gap-3 my-3 w-full">
                   <label htmlFor="images">Extra Images:</label>
                   <input className="p-2  w-full rounded border-2" type={"file"} value={images} onChange={(e)=>{setImages(e.target.files)}} multiple required/>
-                  </div>
+                  </div> */}
                 </div>
                 
                 { isLoading ? <WideButton name="Creating Extra... " /> : <WideButton name="Create Extra" /> }
