@@ -31,7 +31,7 @@ const update = () => {
         <Sidebar view='Orders' create='Order' viewLink='/orders' createLink='/orders/create' />
 
       <div className="mt-5 w-full lg:w-10/12">
-        <Heading heading='Update Order' />
+        <Heading heading='Update Order Delivery' />
 
           <div className="grid">
               <form onSubmit={handleSubmit} action="POST" className="text-gray-700 font-semibold mx-auto w-6/12">

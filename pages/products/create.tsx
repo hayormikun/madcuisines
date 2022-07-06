@@ -1,11 +1,17 @@
+import axios from "axios"
 import { FormEvent, useState } from "react"
+import { useMutation, UseMutationResult } from "react-query"
 import { WideButton } from "../../components/Button"
 import { Heading } from "../../components/Heading"
 import { Sidebar } from "../../components/Sidebar"
+import { IProduct } from "../../libs/interfaces/IProducts"
+
+const createProduct = async(product: IProduct): Promise<IProduct> => {
+  return await axios.post('madcuisne', product)
+}
+
 
 const create = () => {
-  
-
   const [name, setName] = useState<string>("")
   const [category, setCategory] = useState<string>("Select Category")
   const [measurement, setMeasurement] = useState<string>("")
@@ -16,12 +22,15 @@ const create = () => {
   const [description, setDescription] = useState<string>("")
   const [note, setNote] = useState<string>("")
   const [material, setMaterial] = useState<string>("")
-  const [images, setImages] = useState('')
+  const [images, setImages] = useState<File[] | undefined>(undefined)
+
+  const { mutate, isLoading,isError, error, isSuccess }: UseMutationResult<IProduct, Error, IProduct> = useMutation<IProduct, Error, IProduct>(createProduct)
+
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) =>{
     e.preventDefault()
 
-    const product = {
+    const product: IProduct = {
       name,
       category,
       measurement,
@@ -32,9 +41,11 @@ const create = () => {
       description,
       note,
       material,
+      images
     }
 
   console.log(product)
+  mutate(product)
   }
 
   return (
@@ -45,6 +56,8 @@ const create = () => {
             <Heading heading='Create Product' />
 
               <div className="grid">
+              { isError ? `Error encountered while creating extra: ${error.message}` : ''}
+          { isSuccess ? 'Product created successfully' : '' }
               <form onSubmit={handleSubmit} action="POST" encType="multipart/formdata" className="text-gray-700 font-semibold mx-auto w-6/12">
                 <div className="grid my-3 gap-3">
                     <label htmlFor="name">Product Name:</label>
@@ -109,7 +122,7 @@ const create = () => {
 
                   <div className="grid gap-3 my-3 w-full">
                   <label htmlFor="images">Product Images:</label>
-                    <input className="p-2  w-full rounded border-2" type={"file"} id="images" value={images} multiple required/>
+                    <input className="p-2  w-full rounded border-2" type={"file"} id="images" value={images} onChange={(e)=>{setImages(e.target.files)}} multiple required/>
                   </div>
                 </div>
                 

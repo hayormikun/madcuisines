@@ -1,9 +1,14 @@
+import axios from "axios"
 import { FormEvent, useState } from "react"
+import { useMutation, UseMutationResult } from "react-query"
 import { WideButton } from "../../components/Button"
 import { Heading } from "../../components/Heading"
 import { Sidebar } from "../../components/Sidebar"
+import { IExtra } from "../../libs/interfaces/IExtras"
 
-
+const createExtra = async(extra: IExtra): Promise<IExtra> => {
+  return await axios.post('madcuisne', extra)
+}
 
 const create = () => {
   const [name, setName] = useState<string>("")
@@ -16,12 +21,14 @@ const create = () => {
   const [description, setDescription] = useState<string>("")
   const [note, setNote] = useState<string>("")
   const [material, setMaterial] = useState<string>("")
-  const [images, setImages] = useState('')
+  const [images, setImages] = useState<File[] | undefined>(undefined)
+
+  const { mutate, isLoading,isError, error, isSuccess }: UseMutationResult<IExtra, Error, IExtra> = useMutation<IExtra, Error, IExtra>(createExtra)
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) =>{
     e.preventDefault()
 
-    const extra = {
+    const extra: IExtra = {
       name,
       category,
       measurement,
@@ -36,6 +43,7 @@ const create = () => {
     }
 
     console.log(extra)
+    mutate(extra)
   }
 
   return (
@@ -45,6 +53,8 @@ const create = () => {
         <div className="mt-5 w-full lg:w-10/12">
             <Heading heading='Create Extra' />
               <div className="grid">
+              { isError ? `Error encountered while creating extra: ${error.message}` : ''}
+          { isSuccess ? 'Extra created successfully' : '' }
               <form onSubmit={handleSubmit} action="POST" encType="multipart/formdata" className="text-gray-700 font-semibold mx-auto w-6/12">
                 <div className="grid my-3 gap-3">
                     <label htmlFor="name">Extra Name:</label>
@@ -108,11 +118,11 @@ const create = () => {
 
                   <div className="grid gap-3 my-3 w-full">
                   <label htmlFor="images">Extra Images:</label>
-                    <input className="p-2  w-full rounded border-2" type={"file"} id="images" value={images} multiple required/>
+                  <input className="p-2  w-full rounded border-2" type={"file"} value={images} onChange={(e)=>{setImages(e.target.files)}} multiple required/>
                   </div>
                 </div>
                 
-                <WideButton name="Create Extra" />
+                { isLoading ? <WideButton name="Creating Extra... " /> : <WideButton name="Create Extra" /> }
 
               </form>
               </div>

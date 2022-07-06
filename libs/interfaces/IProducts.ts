@@ -10,7 +10,7 @@ export interface IProducts {
     description: string
     note: string
     material: string
-    images: []
+    images: File[] | undefined
 }
 
 export interface IProduct {
@@ -24,5 +24,5 @@ export interface IProduct {
     description: string
     note: string
     material: string
-    images: []
+    images: File[] | undefined
 }

@@ -1,8 +1,16 @@
+import axios from "axios"
 import { FormEvent, useState } from "react"
+import { useMutation, UseMutationResult } from "react-query"
+import orders from "."
 import { WideButton } from "../../components/Button"
 import { Heading } from "../../components/Heading"
 import { Sidebar } from "../../components/Sidebar"
 import { IOrder } from "../../libs/interfaces/IOrders"
+
+const createOrder = async(order: IOrder): Promise<IOrder> => {
+  return await axios.post('http://api.madcuisines.com/order/create-delivery', order)
+}
+
 
 const create = () => {
   const [dispatcher, setDispatcher] = useState<string>('')
@@ -10,6 +18,9 @@ const create = () => {
   const [receiver, setReceiver] = useState<string>('')
   const [receiverPhone, setReceiverPhone] = useState<string>('')
   const [note, setNote] = useState<string>('')
+
+  const { mutate, isLoading,isError, error, isSuccess }: UseMutationResult<IOrder, Error, IOrder> = useMutation<IOrder, Error, IOrder>(createOrder)
+
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>)=>{
     e.preventDefault()
@@ -23,6 +34,7 @@ const create = () => {
     }
 
     console.log(order)
+    mutate(order)
   }
 
   return (
@@ -30,9 +42,11 @@ const create = () => {
         <Sidebar view='Orders' create='Order' viewLink='/orders' createLink='/orders/create' />
 
       <div className="mt-5 w-full lg:w-10/12">
-        <Heading heading='Create Order' />
+        <Heading heading='Create Order Delivery' />
 
           <div className="grid">
+          { isError ? `Error encountered while creating order delivery: ${error.message}` : ''}
+          { isSuccess ? 'Order delivery created successfully' : '' }
               <form onSubmit={handleSubmit} action="POST" className="text-gray-700 font-semibold mx-auto w-6/12">
                 <div className="lg:flex lg:justify-between my-3 overflow-hidden">
                   <div className="grid gap-3 w-full my-3 mr-3">
@@ -64,10 +78,10 @@ const create = () => {
                   <div className="grid gap-3 my-3 w-full">
                   <label htmlFor="note">Note:</label>
                     <textarea className="p-3  w-full rounded border-2" id="note" placeholder="Order Note" value={note} onChange={(e)=>{setNote(e.target.value)}} required></textarea>
-                  </div>
+                </div>
               
+              { isLoading ? <WideButton name="Creating Order... "/> : <WideButton name="Create Order" /> }
                 
-                <WideButton name="Create Order" />
 
               </form>
             </div>
