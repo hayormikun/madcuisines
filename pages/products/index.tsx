@@ -1,5 +1,6 @@
 import axios from 'axios'
 import Link from 'next/link'
+import { useState } from 'react'
 import { dehydrate, QueryClient, useQuery, UseQueryResult } from 'react-query'
 import { DelButton, EditButton } from '../../components/Button'
 import { Card } from '../../components/Card'
@@ -30,7 +31,9 @@ const products = () => {
     'product',
     getProducts,
   )
-  console.log(products)
+
+  let baseUrl = 'http://api.madcuisines.com'
+  let imageSrc = ''
 
   if (isLoading) {
     return <div>Loading...</div>
@@ -55,8 +58,11 @@ const products = () => {
           {products &&
             products.map((product: IProducts) => (
               <div key={product?.productId} className="mx-auto">
+                <div className="hidden">
+                  {(imageSrc = baseUrl + product.images[0].imageUrl)}
+                </div>
                 <Card
-                  image="/img/rice.jpeg"
+                  image={imageSrc}
                   description={product?.description}
                   heading={product?.name}
                   link={`/products/${product?.productId}`}

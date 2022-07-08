@@ -8,10 +8,10 @@ type LayoutProps = {
 
 export const Layout = ({ children }: LayoutProps) => {
   return (
-    <body className="bg-gray-100">
+    <div className="bg-gray-100 h-min-screen">
       <Navbar />
-      {children}
+        {children}
       <Footer />
-    </body>
+    </div>
   )
 }

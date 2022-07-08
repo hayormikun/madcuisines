@@ -7,34 +7,39 @@ import { Heading } from '../../components/Heading'
 import { Sidebar } from '../../components/Sidebar'
 import { IExtras } from '../../libs/interfaces/IExtras'
 
-const getExtras = async()=>{
+const getExtras = async () => {
   const res = await fetch('http://api.madcuisines.com/extra/get-extras')
   const data = await res.json()
   return data.data
 }
 
 export async function getServerSideProps() {
-  const queryClient = new QueryClient
+  const queryClient = new QueryClient()
 
   await queryClient.prefetchQuery<IExtras>('extras')
-  
+
   return {
     props: {
-      dehydratedState: dehydrate(queryClient)
-    }
+      dehydratedState: dehydrate(queryClient),
+    },
   }
 }
 
-
 const extras = () => {
-  const {data: extras, isLoading, isError, error} = useQuery('extras', getExtras)
+  const { data: extras, isLoading, isError, error } = useQuery(
+    'extras',
+    getExtras,
+  )
   console.log(extras)
+
+  let baseUrl = 'http://api.madcuisines.com'
+  let imageSrc = ''
 
   if (isLoading) {
     return <div>Loading...</div>
   }
 
-  if(isError){
+  if (isError) {
     return alert(error)
   }
 
@@ -51,30 +56,33 @@ const extras = () => {
         <Heading heading="Extras" />
 
         <div className="grid md:grid-cols-4 gap-6 mx-5">
-          {extras && extras.map((extra: IExtras)=>(
-            <div key={extra.extraId} className="extra mx-auto">
-            <Card
-              image="/img/rice.jpeg"
-              description={extra.description}
-              heading={extra.name}
-              link={`/products/${extra.extraId}`}
-              alt={extra.name}
-            />
-            <div className="flex justify-start items-center py-3">
-              <Link href={`/products/${extra.extraId}`}>
-                <a className="mr-2">
-                  <EditButton name="edit" />
-                </a>
-              </Link>
-              <Link href={`/products/${extra.extraId}`}>
-                <a className="">
-                  <DelButton name="delete" />
-                </a>
-              </Link>
-            </div>
-          </div>  
-          ))}
-          
+          {extras &&
+            extras.map((extra: IExtras) => (
+              <div key={extra.extraId} className="extra mx-auto">
+                <div className="hidden">
+                  {(imageSrc = baseUrl + extra.images[0].imageUrl)}
+                </div>
+                <Card
+                  image={imageSrc}
+                  description={extra.description}
+                  heading={extra.name}
+                  link={`/products/${extra.extraId}`}
+                  alt={extra.name}
+                />
+                <div className="flex justify-start items-center py-3">
+                  <Link href={`/products/${extra.extraId}`}>
+                    <a className="mr-2">
+                      <EditButton name="edit" />
+                    </a>
+                  </Link>
+                  <Link href={`/products/${extra.extraId}`}>
+                    <a className="">
+                      <DelButton name="delete" />
+                    </a>
+                  </Link>
+                </div>
+              </div>
+            ))}
         </div>
         <div className="my-5 flex justify-center">
           <button className="mx-3 py-2 px-3 capitalize bg-gray-200 text-gray-700 border-2 rounded font-semibold">
