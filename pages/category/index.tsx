@@ -13,7 +13,7 @@ const getCategories = async()=>{
 export async function getServerSideProps() {
   const queryClient = new QueryClient
 
-  await queryClient.prefetchQuery<ICategories>('products')
+  await queryClient.prefetchQuery<ICategories>('categories')
   
   return {
     props: {

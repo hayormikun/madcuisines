@@ -16,7 +16,7 @@ const getExtras = async()=>{
 export async function getServerSideProps() {
   const queryClient = new QueryClient
 
-  await queryClient.prefetchQuery<IExtras>('products')
+  await queryClient.prefetchQuery<IExtras>('extras')
   
   return {
     props: {
@@ -27,7 +27,7 @@ export async function getServerSideProps() {
 
 
 const extras = () => {
-  const {data: extras, isLoading, isError, error} = useQuery('extra', getExtras)
+  const {data: extras, isLoading, isError, error} = useQuery('extras', getExtras)
   console.log(extras)
 
   if (isLoading) {

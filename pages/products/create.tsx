@@ -21,7 +21,7 @@ const create = () => {
   const [description, setDescription] = useState<string>('')
   const [note, setNote] = useState<string>('')
   const [material, setMaterial] = useState<string>('')
-  const [images, setImages] = useState<File>()
+  // const [images, setImages] = useState<File>()
 
   const {
     mutate,
@@ -38,22 +38,22 @@ const create = () => {
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
 
-    const product: IProduct = {
-      name,
-      category,
-      measurement,
-      quantity,
-      price,
-      bonus,
-      order,
-      description,
-      note,
-      material,
-      images,
-    }
+    // const product: IProduct = {
+    //   name,
+    //   category,
+    //   measurement,
+    //   quantity,
+    //   price,
+    //   bonus,
+    //   order,
+    //   description,
+    //   note,
+    //   material,
+    //   images,
+    // }
 
-    console.log(product)
-    mutate(product)
+    // console.log(product)
+    // mutate(product)
   }
 
   return (
@@ -235,7 +235,7 @@ const create = () => {
                 />
               </div>
 
-              <div className="grid gap-3 my-3 w-full">
+              {/* <div className="grid gap-3 my-3 w-full">
                 <label htmlFor="images">Product Images:</label>
                 <input
                   className="p-2  w-full rounded border-2"
@@ -248,7 +248,7 @@ const create = () => {
                   multiple
                   required
                 />
-              </div>
+              </div> */}
             </div>
 
             <WideButton name="Create Product" />
