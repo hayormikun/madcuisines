@@ -255,6 +255,7 @@ const create = () => {
               <WideButton name="Create Extra" />
             )}
           </form>
+          </div>
         </div>
     </main>
   )
