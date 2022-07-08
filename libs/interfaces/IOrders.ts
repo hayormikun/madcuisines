@@ -11,9 +11,6 @@ export interface IOrders {
 }
 
 export interface IOrder {
-    dispatcher: string
-    priority: string
-    receiver: string
-    receiverPhone: string
-    note: string
+    userId: string
+    products: {productId: string, quantity: number}[]
 }
