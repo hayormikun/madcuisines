@@ -251,7 +251,12 @@ const create = () => {
               </div> */}
             </div>
 
-            <WideButton name="Create Product" />
+            {isLoading ? (
+              <WideButton name="Creating Product... " />
+            ) : (
+              <WideButton name="Create Product" />
+            )}
+            
           </form>
         </div>
       </div>

@@ -78,6 +78,7 @@ const create = () => {
             encType="multipart/formdata"
             className="text-gray-700 font-semibold mx-auto w-6/12"
           >
+            
             <div className="grid my-3 gap-3">
               <label htmlFor="name">Extra Name:</label>
               <input
@@ -244,8 +245,8 @@ const create = () => {
                   }}
                   multiple
                   required
-                /> */}
-              </div>
+                />
+              </div> */}
             </div>
 
             {isLoading ? (
@@ -255,7 +256,6 @@ const create = () => {
             )}
           </form>
         </div>
-      </div>
     </main>
   )
 }
