@@ -1,10 +1,10 @@
-import axios from 'axios'
-import { FormEvent, useState } from 'react'
-import { useMutation, UseMutationResult } from 'react-query'
-import { WideButton } from '../../components/Button'
-import { Heading } from '../../components/Heading'
-import { Sidebar } from '../../components/Sidebar'
-import { IOrder } from '../../libs/interfaces/IOrders'
+import axios from "axios"
+import { FormEvent, useState } from "react"
+import { useMutation, UseMutationResult } from "react-query"
+import { WideButton } from "../../../components/Button"
+import { Heading } from "../../../components/Heading"
+import { Sidebar } from "../../../components/Sidebar"
+import { IOrder } from "../../../libs/interfaces/IOrders"
 
 const createOrder = async (order: IOrder): Promise<IOrder> => {
   return await axios.post('http://api.madcuisines.com/order/place-order', order)
