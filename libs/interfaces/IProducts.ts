@@ -3,31 +3,19 @@ export interface IProducts {
     name: string
     description: string
     images: {imageUrl: string}[]
-    category: {
-        categoryId: string
-        description: string
-        name: string
-        status: string
-    }
-    unitOfMeasurement: string
-    quantityAvailable: string
-    status: string
-    unitPrice: string
-    falsePrice: string
-    minOrder: string
     dateCreated: string   
 }
 
 export interface IProduct {
     name: string
-    category: string
-    measurement: string
-    quantity: number
-    price: number
-    bonus: number
-    order: number
     description: string
-    note: string
-    material: string
     images: File
+    category: {
+        name: string
+    }
+    unitOfMeasurement: string
+    quantityAvailable: string
+    unitPrice: string
+    falsePrice: string
+    minOrder: string
 }

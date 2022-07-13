@@ -1,8 +1,7 @@
 import axios from 'axios'
 import Link from 'next/link'
 import { useState } from 'react'
-import { dehydrate, QueryClient, useQuery, UseQueryResult } from 'react-query'
-import { DelButton, EditButton } from '../../components/Button'
+import { dehydrate, QueryClient, useQuery } from 'react-query'
 import { Card } from '../../components/Card'
 import { Heading } from '../../components/Heading'
 import { Sidebar } from '../../components/Sidebar'
@@ -27,13 +26,13 @@ export async function getServerSideProps() {
 }
 
 const products = () => {
+  let baseUrl = 'http://api.madcuisines.com'
+  let imageSrc = ''
+  
   const { data: products, isLoading, isError, error } = useQuery(
     'product',
     getProducts,
   )
-
-  let baseUrl = 'http://api.madcuisines.com'
-  let imageSrc = ''
 
   if (isLoading) {
     return <div>Loading...</div>
@@ -68,18 +67,6 @@ const products = () => {
                   link={`/products/${product?.productId}`}
                   alt={product?.name}
                 />
-                <div className="flex justify-start items-center py-3">
-                  <Link href={`/products/${product?.productId}`}>
-                    <a className="mr-2">
-                      <EditButton name="edit" />
-                    </a>
-                  </Link>
-                  <Link href={`/products/${product?.productId}`}>
-                    <a className="">
-                      <DelButton name="delete" />
-                    </a>
-                  </Link>
-                </div>
               </div>
             ))}
         </div>

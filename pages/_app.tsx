@@ -2,6 +2,7 @@ import '../styles/globals.css'
 import type { AppProps } from 'next/app'
 import { Layout } from '../components/Layout'
 import { Hydrate, QueryClient, QueryClientProvider } from 'react-query'
+import { ReactQueryDevtools } from 'react-query/devtools'
 import { useState } from 'react'
 
 
@@ -14,6 +15,7 @@ function MyApp({ Component, pageProps }: AppProps) {
       <Layout>
         <Component {...pageProps} /> 
       </Layout>
+      <ReactQueryDevtools /> 
       </Hydrate>
     </QueryClientProvider>
     )

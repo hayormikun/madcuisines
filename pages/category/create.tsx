@@ -1,21 +1,33 @@
 import axios from 'axios'
-import { FormEvent, useState } from 'react'
+
+import { useForm, SubmitHandler } from 'react-hook-form'
 import { useMutation, UseMutationResult } from 'react-query'
 import { WideButton } from '../../components/Button'
 import { Heading } from '../../components/Heading'
 import { Sidebar } from '../../components/Sidebar'
 import { ICategory } from '../../libs/interfaces/ICategory'
+import { yupResolver } from '@hookform/resolvers/yup'
+import * as yup from 'yup'
 
-const createCategory = async (category: ICategory): Promise<ICategory> => {
-  return await axios.post(
-    'http://api.madcuisines.com/category/create',
-    category,
-  )
+const createItem = async (item: FormInputs): Promise<FormInputs> => {
+  return await axios.post('http://api.madcuisines.com/category/create', item)
 }
 
+const schema = yup.object().shape({
+  name: yup.string().required().max(30),
+  description: yup.string().required().max(200),
+})
+
+type FormInputs = yup.InferType<typeof schema>
+
 const create = () => {
-  const [name, setName] = useState<string>('')
-  const [description, setDescription] = useState<string>('')
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<ICategory>({
+    resolver: yupResolver(schema),
+  })
 
   const {
     mutate,
@@ -23,21 +35,15 @@ const create = () => {
     isError,
     error,
     isSuccess,
-  }: UseMutationResult<ICategory, Error, ICategory> = useMutation<
-    ICategory,
+  }: UseMutationResult<FormInputs, Error, FormInputs> = useMutation<
+    FormInputs,
     Error,
-    ICategory
-  >(createCategory)
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
+    FormInputs
+  >(createItem)
 
-    const category: ICategory = {
-      name,
-      description,
-    }
-
-    mutate(category)
-    console.log(category)
+  const onSubmit: SubmitHandler<FormInputs> = (item: FormInputs) => {
+    mutate(item)
+    console.log(item)
   }
 
   return (
@@ -57,8 +63,7 @@ const create = () => {
             : ''}
           {isSuccess ? 'Category created successfully' : ''}
           <form
-            onSubmit={handleSubmit}
-            action="POST"
+            onSubmit={handleSubmit(onSubmit)}
             className="text-gray-700 font-semibold mx-auto w-6/12"
           >
             <div className="grid gap-3 w-full my-5">
@@ -66,14 +71,13 @@ const create = () => {
               <input
                 className="p-2 w-full rounded border-2"
                 type={'text'}
+                {...register('name')}
                 id="name"
                 placeholder="Category Name"
-                value={name}
-                onChange={(e) => {
-                  setName(e.target.value)
-                }}
-                required
               />
+              {errors.name && (
+                <span className="text-red-500">{errors.name.message}</span>
+              )}
             </div>
 
             <div className="grid gap-3 w-full my-5">
@@ -82,12 +86,13 @@ const create = () => {
                 className="p-3  w-full rounded border-2"
                 id="description"
                 placeholder="Product description"
-                value={description}
-                onChange={(e) => {
-                  setDescription(e.target.value)
-                }}
-                required
+                {...register('description')}
               ></textarea>
+              {errors.description && (
+                <span className="text-red-500">
+                  {errors.description.message}
+                </span>
+              )}
             </div>
 
             {isLoading ? (

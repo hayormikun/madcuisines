@@ -66,16 +66,16 @@ const extras = () => {
                   image={imageSrc}
                   description={extra.description}
                   heading={extra.name}
-                  link={`/products/${extra.extraId}`}
+                  link={`/extras/${extra.extraId}`}
                   alt={extra.name}
                 />
                 <div className="flex justify-start items-center py-3">
-                  <Link href={`/products/${extra.extraId}`}>
+                  <Link href={`/extras/${extra.extraId}`}>
                     <a className="mr-2">
                       <EditButton name="edit" />
                     </a>
                   </Link>
-                  <Link href={`/products/${extra.extraId}`}>
+                  <Link href={`/extras/${extra.extraId}`}>
                     <a className="">
                       <DelButton name="delete" />
                     </a>
