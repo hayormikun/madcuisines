@@ -9,6 +9,8 @@ import { ICategories } from '../../libs/interfaces/ICategory'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
 import { useRef } from 'react'
+import { Success } from '../../components/Success'
+import { ErrorPrompt } from '../../components/ErrorPrompt'
 
 const getCategories = async () => {
   const res = await fetch('http://api.madcuisines.com/category/get-categories')
@@ -16,23 +18,43 @@ const getCategories = async () => {
   return data.data
 }
 
-const createItem = async (item: FormInputs): Promise<FormInputs> => {
+const createItem = async (item: FormData): Promise<FormData> => {
   return await axios.post('http://api.madcuisines.com/product/create', item)
 }
 
 const schema = yup.object().shape({
   name: yup.string().required().max(30),
-  categoryId: yup.string().required('Select a category'),
+  // categoryId: yup.string().required('Select a category'),
   material: yup.string().required('Product material is required').max(30),
-  description: yup.string().required('Product description is required').max(200),
+  description: yup
+    .string()
+    .required('Product description is required')
+    .max(200),
   note: yup.string().required('Product note is required').max(150),
-  unitOfMeasurement: yup.string().required('Unit of measurement is required').max(20),
-  quantityAvailable: yup.number().positive("Quantity must be greater than zero").integer('Quantity must be a whole number').required('Available Quantity is required'),
-  unitPrice: yup.number().positive('Price must be greater than zero').required('Product price is required'),
-  unitSale: yup.number().positive('Unit sale must be greater than zero').required('Unit sale is required'),
+  unitOfMeasurement: yup
+    .string()
+    .required('Unit of measurement is required')
+    .max(20),
+  quantityAvailable: yup
+    .number()
+    .positive('Quantity must be greater than zero')
+    .integer('Quantity must be a whole number')
+    .required('Available Quantity is required'),
+  unitPrice: yup
+    .number()
+    .positive('Price must be greater than zero')
+    .required('Product price is required'),
+  unitSale: yup
+    .number()
+    .positive('Unit sale must be greater than zero')
+    .required('Unit sale is required'),
   falsePrice: yup.number().required('Discount price is required'),
   status: yup.string().required(),
-  minOrder: yup.number().positive('Order must be greater than zero').integer('Quantity must be a whole number').required('Minimum order is required'),
+  minOrder: yup
+    .number()
+    .positive('Order must be greater than zero')
+    .integer('Quantity must be a whole number')
+    .required('Minimum order is required'),
 })
 
 type FormInputs = yup.InferType<typeof schema>
@@ -55,17 +77,57 @@ const create = () => {
     isError,
     error,
     isSuccess,
-  }: UseMutationResult<FormInputs, Error, FormInputs> = useMutation<
-    FormInputs,
+  }: UseMutationResult<FormData, Error, FormData> = useMutation<
+    FormData,
     Error,
-    FormInputs
+    FormData
   >(createItem)
 
-  const onSubmit: SubmitHandler<FormInputs> = (item: FormInputs) => {
-    console.log(item)
-    console.table(imageRef.current?.files)
-    mutate(item)
+  const onSubmit: SubmitHandler<FormInputs | IProduct> = (
+    item: FormInputs | IProduct,
+  ) => {
+    const {
+      name,
+      description,
+      categoryId,
+      unitOfMeasurement,
+      quantityAvailable,
+      unitPrice,
+      unitSale,
+      status,
+      material,
+      note,
+      falsePrice,
+      minOrder,
+    } = item
+    const formData = new FormData()
+    formData.append('name', name)
+    formData.append('description', description)
+    formData.append('categoryId', categoryId)
+    formData.append('unitOfMeasurement', unitOfMeasurement)
+    formData.append('quantityAvailable', quantityAvailable.toString())
+    formData.append('unitPrice', unitPrice.toString())
+    formData.append('unitSale', unitSale.toString())
+    formData.append('status', status)
+    formData.append('material', material)
+    formData.append('note', note)
+    formData.append('falsePrice', falsePrice.toString())
+    formData.append('minOrder', minOrder.toString())
+
+    if (imageRef.current?.files != undefined) {
+      const imgLen = imageRef.current.files.length
+
+      for (let i = 0; i < imgLen; i++) {
+        formData.append('images', imageRef.current.files[i])
+      }
+    }
+
+    formData.forEach((key) => {
+      console.log(key)
+    })
+    mutate(formData)
   }
+
   return (
     <main className="lg:flex pt-20">
       <Sidebar
@@ -79,10 +141,12 @@ const create = () => {
         <Heading heading="Create Product" />
 
         <div className="grid">
-          {isError
-            ? `Error encountered while creating extra: ${error.message}`
-            : ''}
-          {isSuccess ? 'Product created successfully' : ''}
+          {isError ? (
+            <Error item="product" msg={error.message.toLowerCase()} />
+          ) : (
+            ''
+          )}
+          {isSuccess ? <Success item="product" /> : ''}
           <form
             onSubmit={handleSubmit(onSubmit)}
             encType="multipart/formdata"
@@ -113,7 +177,11 @@ const create = () => {
                   {...register('categoryId')}
                 >
                   {categories?.map((category: ICategories) => (
-                    <option className='h-fit w-fit' key={category.categoryId} value={category.categoryId}>
+                    <option
+                      className="h-fit w-fit"
+                      key={category.categoryId}
+                      value={category.categoryId}
+                    >
                       {category.name}
                     </option>
                   ))}
@@ -221,9 +289,7 @@ const create = () => {
                   {...register('status')}
                 />
                 {errors.status && (
-                  <span className="text-red-500">
-                    {errors.status.message}
-                  </span>
+                  <span className="text-red-500">{errors.status.message}</span>
                 )}
               </div>
 
@@ -298,6 +364,7 @@ const create = () => {
                   id="images"
                   ref={imageRef}
                   multiple
+                  required
                 />
               </div>
             </div>

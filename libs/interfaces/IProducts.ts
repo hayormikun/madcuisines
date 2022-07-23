@@ -9,7 +9,7 @@ export interface IProducts {
 export interface IProduct {
     name: string
     description: string
-    images: File
+    images: File[]
     categoryId: string 
     unitOfMeasurement: string
     quantityAvailable: string

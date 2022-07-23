@@ -1,5 +1,4 @@
 import axios from 'axios'
-import { FormEvent, useState } from 'react'
 import { useMutation, UseMutationResult, useQuery } from 'react-query'
 import { WideButton } from '../../components/Button'
 import { Heading } from '../../components/Heading'
@@ -10,8 +9,11 @@ import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
 import { useRef } from 'react'
 import { SubmitHandler, useForm } from 'react-hook-form'
+import { Success } from '../../components/Success'
+import { ErrorPrompt } from '../../components/ErrorPrompt'
+import { IProducts } from '../../libs/interfaces/IProducts'
 
-const createItem = async (item: FormInputs): Promise<FormInputs> => {
+const createItem = async (item: FormData): Promise<FormData> => {
   return await axios.post('http://api.madcuisines.com/extra/create', item)
 }
 
@@ -21,23 +23,46 @@ const getCategories = async () => {
   return data.data
 }
 
+const getProducts = async () => {
+  const res = await fetch('http://api.madcuisines.com/product/get-products')
+  const data = await res.json()
+  return data.data
+}
+
 const schema = yup.object().shape({
   name: yup.string().required().max(30),
-  categoryId: yup.string().required('Select a category'),
+  // productId: yup.string().required('Select a product'),
+  // categoryId: yup.string().required('Select a category'),
   material: yup.string().required('Extra material is required').max(30),
   description: yup.string().required('Extra description is required').max(200),
   note: yup.string().required('Extra note is required').max(150),
-  unitOfMeasurement: yup.string().required('Unit of measurement is required').max(20),
-  quantityAvailable: yup.number().positive("Quantity must be greater than zero").integer('Quantity must be a whole number').required('Available Quantity is required'),
-  unitPrice: yup.number().positive('Price must be greater than zero').required('Extra price is required'),
-  unitSale: yup.number().positive('Unit sale must be greater than zero').required('Unit sale is required'),
+  unitOfMeasurement: yup
+    .string()
+    .required('Unit of measurement is required')
+    .max(20),
+  quantityAvailable: yup
+    .number()
+    .positive('Quantity must be greater than zero')
+    .integer('Quantity must be a whole number')
+    .required('Available Quantity is required'),
+  unitPrice: yup
+    .number()
+    .positive('Price must be greater than zero')
+    .required('Extra price is required'),
+  unitSale: yup
+    .number()
+    .positive('Unit sale must be greater than zero')
+    .required('Unit sale is required'),
   falsePrice: yup.number().required('Discount price is required'),
   status: yup.string().required(),
-  minOrder: yup.number().positive('Order must be greater than zero').integer('Quantity must be a whole number').required('Minimum order is required'),
+  minOrder: yup
+    .number()
+    .positive('Order must be greater than zero')
+    .integer('Quantity must be a whole number')
+    .required('Minimum order is required'),
 })
 
 type FormInputs = yup.InferType<typeof schema>
-
 
 const create = () => {
   const imageRef = useRef<HTMLInputElement>(null)
@@ -50,6 +75,7 @@ const create = () => {
     resolver: yupResolver(schema),
   })
   const { data: categories } = useQuery('categories', getCategories)
+  const { data: products } = useQuery('products', getProducts)
 
   const {
     mutate,
@@ -57,18 +83,55 @@ const create = () => {
     isError,
     error,
     isSuccess,
-  }: UseMutationResult<FormInputs, Error, FormInputs> = useMutation<
-    FormInputs,
+  }: UseMutationResult<FormData, Error, FormData> = useMutation<
+    FormData,
     Error,
-    FormInputs
+    FormData
   >(createItem)
 
-  const onSubmit: SubmitHandler<FormInputs> = (item: FormInputs) => {
-    console.log(item)
-    console.table(imageRef.current?.files)
-    mutate(item)
+  const onSubmit: SubmitHandler<FormInputs | IExtra>  = (item:  FormInputs | IExtra ) => {
+    const {
+      name,
+      description,
+      productId,
+      categoryId,
+      unitOfMeasurement,
+      quantityAvailable,
+      unitPrice,
+      unitSale,
+      material,
+      note,
+      falsePrice,
+      minOrder,
+    } = item
+    
+    const formData = new FormData()
+    formData.append('name', name)
+    formData.append('description', description)
+    formData.append('productId', productId)
+    formData.append('categoryId', categoryId)
+    formData.append('unitOfMeasurement', unitOfMeasurement)
+    formData.append('quantityAvailable', quantityAvailable.toString())
+    formData.append('unitPrice', unitPrice.toString())
+    formData.append('unitSale', unitSale.toString())
+    formData.append('material', material)
+    formData.append('note', note)
+    formData.append('falsePrice', falsePrice.toString())
+    formData.append('minOrder', minOrder.toString())
+
+    if (imageRef.current?.files != undefined) {
+      const imgLen = imageRef.current.files.length
+
+      for (let i = 0; i < imgLen; i++) {
+        formData.append('images', imageRef.current.files[i])
+      }
+    }
+
+    formData.forEach((key) => {
+      console.log(key)
+    })
+    mutate(formData)
   }
-  
 
   return (
     <main className="lg:flex pt-20">
@@ -82,16 +145,17 @@ const create = () => {
       <div className="mt-5 w-full lg:w-10/12">
         <Heading heading="Create Extra" />
         <div className="grid">
-          {isError
-            ? `Error encountered while creating extra: ${error.message}`
-            : ''}
-          {isSuccess ? 'Extra created successfully' : ''}
+          {isError ? (
+            <ErrorPrompt item="product" msg={error.message.toLowerCase()} />
+          ) : (
+            ''
+          )}
+          {isSuccess ? <Success item="product" /> : ''}
           <form
             onSubmit={handleSubmit(onSubmit)}
             encType="multipart/formdata"
             className="text-gray-700 font-semibold mx-auto w-6/12"
           >
-            
             <div className="grid my-3 gap-3">
               <label htmlFor="name">Extra Name:</label>
               <input
@@ -109,7 +173,7 @@ const create = () => {
 
             <div className="lg:flex lg:justify-between my-3 overflow-hidden">
               <div className="grid gap-3 w-full my-3 mr-3 h-fit">
-                <label htmlFor="category">Categories:</label>
+                <label htmlFor="category">Select Category:</label>
                 <select
                   className="p-2 rounded border-2"
                   id="category"
@@ -117,7 +181,11 @@ const create = () => {
                   {...register('categoryId')}
                 >
                   {categories?.map((category: ICategories) => (
-                    <option className='h-fit w-fit' key={category.categoryId} value={category.categoryId}>
+                    <option
+                      className="h-fit w-fit"
+                      key={category.categoryId}
+                      value={category.categoryId}
+                    >
                       {category.name}
                     </option>
                   ))}
@@ -130,33 +198,26 @@ const create = () => {
               </div>
 
               <div className="grid gap-3 w-full my-3 mr-3 h-fit">
-                <label htmlFor="measurement">Measuring Unit:</label>
-                <input
-                  className="p-2 w-full rounded border-2 h-fit"
-                  type={'text'}
-                  id="measurement"
-                  placeholder="Measuring unit"
-                  {...register('unitOfMeasurement')}
-                />
-                {errors.unitOfMeasurement && (
+                <label htmlFor="product">Select Product:</label>
+                <select
+                  className="p-2 rounded border-2"
+                  id="product"
+                  placeholder="Select product"
+                  {...register('productId')}
+                >
+                  {products?.map((product: IProducts) => (
+                    <option
+                      className="h-fit w-fit"
+                      key={product.productId}
+                      value={product.productId}
+                    >
+                      {product.name}
+                    </option>
+                  ))}
+                </select>
+                {errors.productId && (
                   <span className="text-red-500">
-                    {errors.unitOfMeasurement.message}
-                  </span>
-                )}
-              </div>
-
-              <div className="grid gap-3 my-3 w-full h-fit">
-                <label htmlFor="quantity">Available Quantity:</label>
-                <input
-                  className="p-2 rounded border-2 h-fit"
-                  type={'number'}
-                  id="quantity"
-                  placeholder="Available Quantity"
-                  {...register('quantityAvailable')}
-                />
-                {errors.quantityAvailable && (
-                  <span className="text-red-500">
-                    {errors.quantityAvailable.message}
+                    {errors.productId.message}
                   </span>
                 )}
               </div>
@@ -216,21 +277,36 @@ const create = () => {
 
             <div className="lg:flex lg:justify-between my-3 overflow-hidden">
               <div className="grid gap-3 w-full my-3 mr-3 h-fit">
-                <label htmlFor="status">Status:</label>
+                <label htmlFor="measurement">Measuring Unit:</label>
                 <input
-                  className="p-2 rounded w-full border-2 h-fit"
+                  className="p-2 w-full rounded border-2 h-fit"
                   type={'text'}
-                  id="status"
-                  placeholder="Extra status"
-                  {...register('status')}
+                  id="measurement"
+                  placeholder="Measuring unit"
+                  {...register('unitOfMeasurement')}
                 />
-                {errors.status && (
+                {errors.unitOfMeasurement && (
                   <span className="text-red-500">
-                    {errors.status.message}
+                    {errors.unitOfMeasurement.message}
                   </span>
                 )}
               </div>
 
+              <div className="grid gap-3 my-3 mr-3 w-full h-fit">
+                <label htmlFor="quantity">Available Quantity:</label>
+                <input
+                  className="p-2 rounded border-2 h-fit"
+                  type={'number'}
+                  id="quantity"
+                  placeholder="Available Quantity"
+                  {...register('quantityAvailable')}
+                />
+                {errors.quantityAvailable && (
+                  <span className="text-red-500">
+                    {errors.quantityAvailable.message}
+                  </span>
+                )}
+              </div>
               <div className="grid gap-3 my-3 w-full h-fit">
                 <label htmlFor="sale" className="font-semibold">
                   Unit Sale:
@@ -302,6 +378,7 @@ const create = () => {
                   id="images"
                   ref={imageRef}
                   multiple
+                  required
                 />
               </div>
             </div>
@@ -312,8 +389,8 @@ const create = () => {
               <WideButton name="Create Extra" />
             )}
           </form>
-          </div>
         </div>
+      </div>
     </main>
   )
 }

@@ -50,7 +50,7 @@ const Details = () => {
 
   const handleDelete = async () => {
     await axios
-      .delete(`/product/delete-product/${id}`)
+      .post(`/product/delete-product/${id}`)
       .then(() => {
         router.push('/products/index')
       })

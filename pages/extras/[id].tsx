@@ -47,7 +47,7 @@ const Details = () => {
 
   const handleDelete = async () => {
     await axios
-      .delete(`/extra/delete-extra/${id}`)
+      .post(`/extra/delete-extra/${id}`)
       .then(() => {
         router.push('/extras/index')
       })

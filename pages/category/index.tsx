@@ -12,11 +12,6 @@ const getCategories = async()=>{
   return data.data
 }
 
-const deleteCategory = async()=>{
- return await axios.delete('http://api.madcuisines.com/category/delete-category')
-}
-
-
 export async function getServerSideProps() {
   const queryClient = new QueryClient
 
@@ -30,8 +25,16 @@ export async function getServerSideProps() {
 }
 
 const category = () => {
-  const {data: categories, isLoading, isError, error} = useQuery('categories', getCategories)
-  const {mutate} = useMutation(deleteCategory)
+  const {data: categories, isLoading, isError, error, refetch} = useQuery('categories', getCategories)
+
+
+  const deleteCategory = async(id: string)=>{
+    return await axios.post(`http://api.madcuisines.com/category/delete-category/${id}`).then(()=>{
+     refetch
+    })
+  }
+  
+  const {mutate} = useMutation(deleteCategory) 
 
   if (isLoading) {
     return <div>Loading...</div>
