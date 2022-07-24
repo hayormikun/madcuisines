@@ -8,8 +8,10 @@ import { Sidebar } from '../../components/Sidebar'
 import { ICategory } from '../../libs/interfaces/ICategory'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
+import { Success } from '../../components/Success'
+import { ErrorPrompt } from '../../components/ErrorPrompt'
 
-const createItem = async (item: FormInputs): Promise<FormInputs> => {
+const createItem = async (item: FormData): Promise<FormData> => {
   return await axios.post('http://api.madcuisines.com/category/create', item)
 }
 
@@ -35,15 +37,21 @@ const create = () => {
     isError,
     error,
     isSuccess,
-  }: UseMutationResult<FormInputs, Error, FormInputs> = useMutation<
-    FormInputs,
+  }: UseMutationResult<FormData, Error, FormData> = useMutation<
+    FormData,
     Error,
-    FormInputs
+    FormData
   >(createItem)
 
-  const onSubmit: SubmitHandler<FormInputs> = (item: FormInputs) => {
-    mutate(item)
-    console.log(item)
+  const onSubmit: SubmitHandler<FormInputs | ICategory > = (item: FormInputs | ICategory) => { 
+    const {
+      name,
+      description
+    } = item
+
+    const formData = new FormData()
+
+    mutate(formData)
   }
 
   return (
@@ -58,10 +66,12 @@ const create = () => {
         <Heading heading="Create Category" />
 
         <div className="grid">
-          {isError
-            ? `Error encountered while creating Category: ${error.message}`
-            : ''}
-          {isSuccess ? 'Category created successfully' : ''}
+        {isError ? (
+            <ErrorPrompt item="category" msg={error.message.toLowerCase()} />
+          ) : (
+            ''
+          )}
+          {isSuccess ? <Success item="category" /> : ''}
           <form
             onSubmit={handleSubmit(onSubmit)}
             className="text-gray-700 font-semibold mx-auto w-6/12"

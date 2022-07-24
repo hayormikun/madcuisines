@@ -142,7 +142,7 @@ const create = () => {
 
         <div className="grid">
           {isError ? (
-            <Error item="product" msg={error.message.toLowerCase()} />
+            <ErrorPrompt item="product" msg={error.message.toLowerCase()} />
           ) : (
             ''
           )}

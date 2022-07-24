@@ -31,8 +31,8 @@ const getProducts = async () => {
 
 const schema = yup.object().shape({
   name: yup.string().required().max(30),
-  // productId: yup.string().required('Select a product'),
-  // categoryId: yup.string().required('Select a category'),
+  productId: yup.string().required('Select a product'),
+  categoryId: yup.string().required('Select a category'),
   material: yup.string().required('Extra material is required').max(30),
   description: yup.string().required('Extra description is required').max(200),
   note: yup.string().required('Extra note is required').max(150),
@@ -54,7 +54,7 @@ const schema = yup.object().shape({
     .positive('Unit sale must be greater than zero')
     .required('Unit sale is required'),
   falsePrice: yup.number().required('Discount price is required'),
-  status: yup.string().required(),
+
   minOrder: yup
     .number()
     .positive('Order must be greater than zero')
@@ -146,11 +146,11 @@ const create = () => {
         <Heading heading="Create Extra" />
         <div className="grid">
           {isError ? (
-            <ErrorPrompt item="product" msg={error.message.toLowerCase()} />
+            <ErrorPrompt item="extra" msg={error.message.toLowerCase()} />
           ) : (
             ''
           )}
-          {isSuccess ? <Success item="product" /> : ''}
+          {isSuccess ? <Success item="extra" /> : ''}
           <form
             onSubmit={handleSubmit(onSubmit)}
             encType="multipart/formdata"

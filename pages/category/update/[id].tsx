@@ -1,22 +1,103 @@
-import { FormEvent, useState } from 'react'
+import axios from 'axios'
+
+import { useForm, SubmitHandler } from 'react-hook-form'
+import {
+  dehydrate,
+  QueryClient,
+  useMutation,
+  UseMutationResult,
+  useQuery,
+} from 'react-query'
 import { WideButton } from '../../../components/Button'
 import { Heading } from '../../../components/Heading'
 import { Sidebar } from '../../../components/Sidebar'
-import { ICategory } from '../../../libs/interfaces/ICategory'
+import { ICategories, ICategory } from '../../../libs/interfaces/ICategory'
+import { yupResolver } from '@hookform/resolvers/yup'
+import * as yup from 'yup'
+import category from '..'
+import { useRouter } from 'next/router'
+
+const updateItem = async (item: FormData): Promise<FormData> => {
+  return await axios.post('http://api.madcuisines.com/category/create', item)
+}
+
+const fetchCategory = async (id: string | string[] | undefined) => {
+  if (typeof id === 'string') {
+    const res = await fetch(
+      `http://api.madcuisines.com/category/get-category/${id}`,
+    )
+    if (res.ok) {
+      return res.json()
+    }
+    throw new Error('error fetching product with id')
+  }
+
+  throw new Error('invalid id')
+}
+
+export async function getServerSideProps() {
+  const queryClient = new QueryClient()
+
+  await queryClient.prefetchQuery<ICategory>('category')
+
+  return {
+    props: {
+      dehydratedState: dehydrate(queryClient),
+    },
+  }
+}
+
+const schema = yup.object().shape({
+  name: yup.string().required().max(30),
+  description: yup.string().required().max(200),
+})
+
+type FormInputs = yup.InferType<typeof schema>
 
 const update = () => {
-  const [name, setName] = useState<string>('')
-  const [description, setDescription] = useState<string>('')
+  const {
+    query: { id },
+  } = useRouter()
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<ICategory>({
+    resolver: yupResolver(schema),
+  })
 
-    const category: ICategory = {
+  const { data: category } = useQuery(
+    ['category', id],
+    () => fetchCategory(id),
+    {
+      enabled: !!id,
+    },
+  )
+
+  const {
+    mutate,
+    isLoading,
+    isError,
+    error,
+    isSuccess,
+  }: UseMutationResult<FormData, Error, FormData> = useMutation<
+    FormData,
+    Error,
+    FormData
+  >(updateItem)
+
+  const onSubmit: SubmitHandler<FormInputs | ICategory> = (item: FormInputs | ICategory) => {
+    const {
       name,
-      description,
-    }
+      description
+    } = item
 
-    console.log(category)
+    const formData =  new FormData()
+    formData.append('name', name)
+    formData.append('description', description)
+
+    mutate(formData)
   }
 
   return (
@@ -28,12 +109,15 @@ const update = () => {
         createLink="/category/create"
       />
       <div className="mt-5 w-full lg:w-10/12">
-        <Heading heading="Update Category" />
+        <Heading heading="Create Category" />
 
         <div className="grid">
+          {isError
+            ? `Error encountered while creating Category: ${error.message}`
+            : ''}
+          {isSuccess ? 'Category created successfully' : ''}
           <form
-            onSubmit={handleSubmit}
-            action="POST"
+            onSubmit={handleSubmit(onSubmit)}
             className="text-gray-700 font-semibold mx-auto w-6/12"
           >
             <div className="grid gap-3 w-full my-5">
@@ -41,14 +125,13 @@ const update = () => {
               <input
                 className="p-2 w-full rounded border-2"
                 type={'text'}
+                {...register('name')}
                 id="name"
-                placeholder="Category Name"
-                value={name}
-                onChange={(e) => {
-                  setName(e.target.value)
-                }}
-                required
+                placeholder={category.name}
               />
+              {errors.name && (
+                <span className="text-red-500">{errors.name.message}</span>
+              )}
             </div>
 
             <div className="grid gap-3 w-full my-5">
@@ -56,16 +139,21 @@ const update = () => {
               <textarea
                 className="p-3  w-full rounded border-2"
                 id="description"
-                placeholder="Product description"
-                value={description}
-                onChange={(e) => {
-                  setDescription(e.target.value)
-                }}
-                required
+                placeholder={category.description}
+                {...register('description')}
               ></textarea>
+              {errors.description && (
+                <span className="text-red-500">
+                  {errors.description.message}
+                </span>
+              )}
             </div>
 
-            <WideButton name="Update Category" />
+            {isLoading ? (
+              <WideButton name="Updating Category... " />
+            ) : (
+              <WideButton name="Update Category" />
+            )}
           </form>
         </div>
       </div>
