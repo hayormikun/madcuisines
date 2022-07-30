@@ -1,5 +1,20 @@
+export interface IOrders {
+    orderId: string
+    orderNumber: string
+    userId: string
+    status: string
+    totalAmount: string
+    orderDate: Date 
+    dueDate: Date
+    user: {
+        firstName: string,
+        lastName: string
+    }
+}
+
 
 export interface IOrder {
     userId: string
-    products: {productId: string, quantity: number}[]
+    productId: string
+    quantity: number
 }

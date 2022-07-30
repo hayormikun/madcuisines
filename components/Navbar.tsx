@@ -3,8 +3,21 @@ import Link from 'next/link'
 import { useState } from 'react'
 import { LogOutButton, WideButton } from './Button'
 import { MenuIcon, XIcon } from '@heroicons/react/outline'
+import { useEffect } from 'react'
+import { useRouter } from 'next/router'
+import { signOut } from 'next-auth/react'
+import { useSession } from 'next-auth/react'
 
 export const Navbar = () => {
+  const { status, data } = useSession()
+  
+  const router = useRouter()
+  useEffect(()=>{
+    if (status === 'unauthenticated')
+    router.replace('/auth/login')
+  }, [status])
+
+
   const [isOpen, setIsOpen] = useState(false)
   const handleHamburger = () => {
     setIsOpen(!isOpen)
@@ -14,15 +27,16 @@ export const Navbar = () => {
     setIsOpen(false)
   }
 
+  if (status === "authenticated") {
   return (
     <nav className="w-screen bg-gray-100 h-[100px] z-20 fixed">
-      <div className="flex justify-between py-3 mx-7 items-center">
+      <div className="flex justify-between py-5 mx-7 items-center">
         <Link href={'/'}>
           <a onClick={handleClose}>
             <Image
               src={'/img/logo.png'}
-              height="80px"
-              width="80px"
+              height={50}
+              width={50}
               alt="logo"
             />
           </a>
@@ -44,7 +58,9 @@ export const Navbar = () => {
           <Link href={'/category'}>
             <a className="mx-5 py-2 hover:text-teal-500">Category</a>
           </Link>
-          <a className="mx-5">
+          <a onClick={()=>{
+            signOut()
+          }} className="mx-5">
             <LogOutButton name="log out" />
           </a>
         </ul>
@@ -96,10 +112,14 @@ export const Navbar = () => {
           </a>
         </Link>
 
-        <a onClick={handleClose} className="py-3">
+        <a onClick={()=>{
+            setIsOpen(false)
+            signOut()
+          }} className="py-3">
           <WideButton name="logout" />
         </a>
       </ul>
     </nav>
   )
+  }
 }

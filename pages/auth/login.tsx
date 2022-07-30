@@ -2,14 +2,15 @@ import { LockClosedIcon, MailIcon } from '@heroicons/react/outline'
 import Image from 'next/image'
 import { useState } from 'react'
 import { SubmitHandler, useForm } from 'react-hook-form'
-import { WideButton } from '../components/Button'
-import { Heading } from '../components/Heading'
-import { ILogin } from '../libs/interfaces/ILogin'
+import { WideButton } from '../../components/Button'
+import { Heading } from '../../components/Heading'
+import { ILogin } from '../../libs/interfaces/ILogin'
+import { signIn } from 'next-auth/react'
 import * as yup from 'yup'
 import { yupResolver } from '@hookform/resolvers/yup'
 import axios from 'axios'
-import { useRouter } from 'next/router'
-import { useMutation, UseMutationResult } from 'react-query'
+
+
 
 const schema = yup.object().shape({
   email: yup.string().required(),
@@ -18,14 +19,10 @@ const schema = yup.object().shape({
 
 type FormInputs = yup.InferType<typeof schema>
 
-const loginUser = async (authUser: FormData): Promise<FormData> => {
-  return await axios.post('http://api.madcuisines.com/user/login', authUser)
-}
-
 const login = () => {
   const [focus, setFocus] = useState<boolean>(false)
   const [show, setShow] = useState('absolute')
-  const router = useRouter()
+
 
   const {
     register,
@@ -34,16 +31,6 @@ const login = () => {
   } = useForm<ILogin>({
     resolver: yupResolver(schema),
   })
-
-  const {
-    isError,
-    isSuccess,
-    mutate,
-  }: UseMutationResult<FormData, Error, FormData> = useMutation<
-    FormData,
-    Error,
-    FormData
-  >(loginUser)
 
   const handleField = () => {
     setFocus(!focus)
@@ -55,23 +42,19 @@ const login = () => {
     setShow('absolute')
   }
 
-  const onSubmit: SubmitHandler<FormInputs | ILogin> = (
+  const onSubmit: SubmitHandler<FormInputs | ILogin> = async (
     authUser: FormInputs | ILogin,
   ) => {
     const { email, password } = authUser
-    const formData = new FormData()
-    formData.append('admin', email)
-    formData.append('password', password)
+    
 
-    formData.forEach((key) => {
-      console.log(key)
+   const res = await signIn('credentials', {
+      email,
+      password,
+      redirect: false
     })
     
-    mutate(formData)
-
-    if (isSuccess) {
-      router.push('/')
-    }
+    console.log(res)
   }
 
   return (

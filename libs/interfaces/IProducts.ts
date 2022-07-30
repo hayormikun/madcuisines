@@ -3,7 +3,7 @@ export interface IProducts {
     name: string
     description: string
     images: {imageUrl: string}[]
-    dateCreated: string   
+    dateCreated: string  
 }
 
 export interface IProduct {
@@ -15,7 +15,6 @@ export interface IProduct {
     quantityAvailable: string
     unitPrice: string
     unitSale: string
-    status: string
     material: string
     note: string
     falsePrice: string

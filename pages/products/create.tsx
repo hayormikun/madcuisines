@@ -8,9 +8,12 @@ import { IProduct } from '../../libs/interfaces/IProducts'
 import { ICategories } from '../../libs/interfaces/ICategory'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
-import { useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { Success } from '../../components/Success'
 import { ErrorPrompt } from '../../components/ErrorPrompt'
+import { useRouter } from 'next/router'
+import { useSession } from 'next-auth/react'
+import { Loading } from '../../components/Loading'
 
 const getCategories = async () => {
   const res = await fetch('http://api.madcuisines.com/category/get-categories')
@@ -24,7 +27,7 @@ const createItem = async (item: FormData): Promise<FormData> => {
 
 const schema = yup.object().shape({
   name: yup.string().required().max(30),
-  // categoryId: yup.string().required('Select a category'),
+  categoryId: yup.string().required('Select a category'),
   material: yup.string().required('Product material is required').max(30),
   description: yup
     .string()
@@ -49,7 +52,6 @@ const schema = yup.object().shape({
     .positive('Unit sale must be greater than zero')
     .required('Unit sale is required'),
   falsePrice: yup.number().required('Discount price is required'),
-  status: yup.string().required(),
   minOrder: yup
     .number()
     .positive('Order must be greater than zero')
@@ -60,6 +62,14 @@ const schema = yup.object().shape({
 type FormInputs = yup.InferType<typeof schema>
 
 const create = () => {
+  const { status, data } = useSession()
+  
+  const router = useRouter()
+  useEffect(()=>{
+    if (status === 'unauthenticated')
+    router.replace('/auth/login')
+  }, [status])
+
   const imageRef = useRef<HTMLInputElement>(null)
 
   const {
@@ -94,7 +104,6 @@ const create = () => {
       quantityAvailable,
       unitPrice,
       unitSale,
-      status,
       material,
       note,
       falsePrice,
@@ -108,7 +117,6 @@ const create = () => {
     formData.append('quantityAvailable', quantityAvailable.toString())
     formData.append('unitPrice', unitPrice.toString())
     formData.append('unitSale', unitSale.toString())
-    formData.append('status', status)
     formData.append('material', material)
     formData.append('note', note)
     formData.append('falsePrice', falsePrice.toString())
@@ -128,257 +136,247 @@ const create = () => {
     mutate(formData)
   }
 
-  return (
-    <main className="lg:flex pt-20">
-      <Sidebar
-        view="Products"
-        create="Product"
-        viewLink="/products"
-        createLink="/products/create"
-      />
-
-      <div className="mt-5 w-full lg:w-10/12">
-        <Heading heading="Create Product" />
-
-        <div className="grid">
-          {isError ? (
-            <ErrorPrompt item="product" msg={error.message.toLowerCase()} />
-          ) : (
-            ''
-          )}
-          {isSuccess ? <Success item="product" /> : ''}
-          <form
-            onSubmit={handleSubmit(onSubmit)}
-            encType="multipart/formdata"
-            className="text-gray-700 font-semibold mx-auto w-6/12"
-          >
-            <div className="grid my-3 gap-3">
-              <label htmlFor="name">Product Name:</label>
-              <input
-                className="p-2 w-full rounded border-2"
-                type={'text'}
-                id="name"
-                placeholder="Product name"
-                {...register('name')}
-              />
-
-              {errors.name && (
-                <span className="text-red-500">{errors.name.message}</span>
-              )}
-            </div>
-
-            <div className="lg:flex lg:justify-between my-3 overflow-hidden">
-              <div className="grid gap-3 w-full my-3 mr-3 h-fit">
-                <label htmlFor="category">Categories:</label>
-                <select
-                  className="p-2 rounded border-2"
-                  id="category"
-                  placeholder="Select Category"
-                  {...register('categoryId')}
-                >
-                  {categories?.map((category: ICategories) => (
-                    <option
-                      className="h-fit w-fit"
-                      key={category.categoryId}
-                      value={category.categoryId}
-                    >
-                      {category.name}
-                    </option>
-                  ))}
-                </select>
-                {errors.categoryId && (
-                  <span className="text-red-500">
-                    {errors.categoryId.message}
-                  </span>
-                )}
-              </div>
-
-              <div className="grid gap-3 w-full my-3 mr-3 h-fit">
-                <label htmlFor="measurement">Measuring Unit:</label>
-                <input
-                  className="p-2 w-full rounded border-2 h-fit"
-                  type={'text'}
-                  id="measurement"
-                  placeholder="Measuring unit"
-                  {...register('unitOfMeasurement')}
-                />
-                {errors.unitOfMeasurement && (
-                  <span className="text-red-500">
-                    {errors.unitOfMeasurement.message}
-                  </span>
-                )}
-              </div>
-
-              <div className="grid gap-3 my-3 w-full h-fit">
-                <label htmlFor="quantity">Available Quantity:</label>
-                <input
-                  className="p-2 rounded border-2 h-fit"
-                  type={'number'}
-                  id="quantity"
-                  placeholder="Available Quantity"
-                  {...register('quantityAvailable')}
-                />
-                {errors.quantityAvailable && (
-                  <span className="text-red-500">
-                    {errors.quantityAvailable.message}
-                  </span>
-                )}
-              </div>
-            </div>
-
-            <div className="lg:flex lg:justify-between my-3 overflow-hidden">
-              <div className="grid gap-3 w-full my-3 mr-3 h-fit">
-                <label htmlFor="price">Price:</label>
-                <input
-                  className="p-2 rounded w-full border-2 h-fit"
-                  type={'number'}
-                  id="price"
-                  placeholder="Unit price"
-                  {...register('unitPrice')}
-                />
-                {errors.unitPrice && (
-                  <span className="text-red-500">
-                    {errors.unitPrice.message}
-                  </span>
-                )}
-              </div>
-
-              <div className="grid gap-3 w-full my-3 mr-3 h-fit">
-                <label htmlFor="bonus">Discount Price:</label>
-                <input
-                  className="p-2 rounded w-full border-2 h-fit"
-                  type={'number'}
-                  id="bonus"
-                  placeholder="Discount price"
-                  {...register('falsePrice')}
-                />
-                {errors.falsePrice && (
-                  <span className="text-red-500">
-                    {errors.falsePrice.message}
-                  </span>
-                )}
-              </div>
-
-              <div className="grid gap-3 my-3 w-full h-fit">
-                <label htmlFor="order" className="font-semibold">
-                  Min Order:
-                </label>
-                <input
-                  className="p-2 rounded w-full border-2 h-fit"
-                  type={'number'}
-                  id="order"
-                  placeholder="Minimum order"
-                  {...register('minOrder')}
-                />
-                {errors.minOrder && (
-                  <span className="text-red-500">
-                    {errors.minOrder.message}
-                  </span>
-                )}
-              </div>
-            </div>
-
-            <div className="lg:flex lg:justify-between my-3 overflow-hidden">
-              <div className="grid gap-3 w-full my-3 mr-3 h-fit">
-                <label htmlFor="status">Status:</label>
-                <input
-                  className="p-2 rounded w-full border-2 h-fit"
-                  type={'text'}
-                  id="status"
-                  placeholder="Product status"
-                  {...register('status')}
-                />
-                {errors.status && (
-                  <span className="text-red-500">{errors.status.message}</span>
-                )}
-              </div>
-
-              <div className="grid gap-3 my-3 w-full h-fit">
-                <label htmlFor="sale" className="font-semibold">
-                  Unit Sale:
-                </label>
-                <input
-                  className="p-2 rounded w-full border-2 h-fit"
-                  type={'number'}
-                  id="sale"
-                  placeholder="Unit sale"
-                  {...register('unitSale')}
-                />
-                {errors.unitSale && (
-                  <span className="text-red-500">
-                    {errors.unitSale.message}
-                  </span>
-                )}
-              </div>
-            </div>
-
-            <div className="lg:flex lg:justify-between">
-              <div className="grid gap-3 w-full my-3 mr-3 h-fit">
-                <label htmlFor="description">Description:</label>
-                <textarea
-                  className="p-3  w-full rounded border-2 h-fit"
-                  id="description"
-                  placeholder="Product description"
-                  {...register('description')}
-                ></textarea>
-                {errors.description && (
-                  <span className="text-red-500">
-                    {errors.description.message}
-                  </span>
-                )}
-              </div>
-
-              <div className="grid gap-3 my-3 w-full">
-                <label htmlFor="note">Note:</label>
-                <textarea
-                  className="p-3  w-full rounded border-2"
-                  id="note"
-                  placeholder="Product Note"
-                  {...register('note')}
-                ></textarea>
-              </div>
-            </div>
-
-            <div className="lg:flex lg:justify-between my-3">
-              <div className="grid gap-3 my-3 w-full mr-3">
-                <label htmlFor="material">Material:</label>
+  if (status === 'authenticated'){
+    return (
+      <main className="lg:flex pt-20">
+        <Sidebar
+          view="Products"
+          create="Product"
+          viewLink="/products"
+          createLink="/products/create"
+        />
+  
+        <div className="mt-5 w-full lg:w-10/12">
+          <Heading heading="Create Product" />
+  
+          <div className="grid">
+            {isError ? (
+              <ErrorPrompt item="product" msg={error.message.toLowerCase()} />
+            ) : (
+              ''
+            )}
+            {isSuccess ? <Success item="product" /> : ''}
+            <form
+              onSubmit={handleSubmit(onSubmit)}
+              encType="multipart/formdata"
+              className="text-gray-700 font-semibold mx-auto w-6/12"
+            >
+              <div className="grid my-3 gap-3">
+                <label htmlFor="name">Product Name:</label>
                 <input
                   className="p-2 w-full rounded border-2"
                   type={'text'}
-                  id="material"
-                  placeholder="Product Material"
-                  {...register('material')}
+                  id="name"
+                  placeholder="Product name"
+                  {...register('name')}
                 />
-                {errors.material && (
-                  <span className="text-red-500">
-                    {errors.material.message}
-                  </span>
+  
+                {errors.name && (
+                  <span className="text-red-500">{errors.name.message}</span>
                 )}
               </div>
-
-              <div className="grid gap-3 my-3 w-full">
-                <label htmlFor="images">Choose an image or images:</label>
-                <input
-                  className="p-2  w-full rounded border-2"
-                  type={'file'}
-                  id="images"
-                  ref={imageRef}
-                  multiple
-                  required
-                />
+  
+              <div className="lg:flex lg:justify-between my-3 overflow-hidden">
+                <div className="grid gap-3 w-full my-3 mr-3 h-fit">
+                  <label htmlFor="category">Categories:</label>
+                  <select
+                    className="p-2 rounded border-2"
+                    id="category"
+                    placeholder="Select Category"
+                    {...register('categoryId')}
+                  >
+                    {categories?.map((category: ICategories) => (
+                      <option
+                        className="h-fit w-fit"
+                        key={category.categoryId}
+                        value={category.categoryId}
+                      >
+                        {category.name}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.categoryId && (
+                    <span className="text-red-500">
+                      {errors.categoryId.message}
+                    </span>
+                  )}
+                </div>
+  
+                <div className="grid gap-3 w-full my-3 mr-3 h-fit">
+                  <label htmlFor="measurement">Measuring Unit:</label>
+                  <input
+                    className="p-2 w-full rounded border-2 h-fit"
+                    type={'text'}
+                    id="measurement"
+                    placeholder="Measuring unit"
+                    {...register('unitOfMeasurement')}
+                  />
+                  {errors.unitOfMeasurement && (
+                    <span className="text-red-500">
+                      {errors.unitOfMeasurement.message}
+                    </span>
+                  )}
+                </div>
+  
+                <div className="grid gap-3 my-3 w-full h-fit">
+                  <label htmlFor="quantity">Available Quantity:</label>
+                  <input
+                    className="p-2 rounded border-2 h-fit"
+                    type={'number'}
+                    id="quantity"
+                    placeholder="Available Quantity"
+                    {...register('quantityAvailable')}
+                  />
+                  {errors.quantityAvailable && (
+                    <span className="text-red-500">
+                      {errors.quantityAvailable.message}
+                    </span>
+                  )}
+                </div>
               </div>
-            </div>
-
-            {isLoading ? (
-              <WideButton name="Creating Product... " />
-            ) : (
-              <WideButton name="Create Product" />
-            )}
-          </form>
+  
+              <div className="lg:flex lg:justify-between my-3 overflow-hidden">
+                <div className="grid gap-3 w-full my-3 mr-3 h-fit">
+                  <label htmlFor="price">Price:</label>
+                  <input
+                    className="p-2 rounded w-full border-2 h-fit"
+                    type={'number'}
+                    id="price"
+                    placeholder="Unit price"
+                    {...register('unitPrice')}
+                  />
+                  {errors.unitPrice && (
+                    <span className="text-red-500">
+                      {errors.unitPrice.message}
+                    </span>
+                  )}
+                </div>
+  
+                <div className="grid gap-3 w-full my-3 mr-3 h-fit">
+                  <label htmlFor="bonus">Discount Price:</label>
+                  <input
+                    className="p-2 rounded w-full border-2 h-fit"
+                    type={'number'}
+                    id="bonus"
+                    placeholder="Discount price"
+                    {...register('falsePrice')}
+                  />
+                  {errors.falsePrice && (
+                    <span className="text-red-500">
+                      {errors.falsePrice.message}
+                    </span>
+                  )}
+                </div>
+  
+                <div className="grid gap-3 my-3 w-full h-fit">
+                  <label htmlFor="order" className="font-semibold">
+                    Min Order:
+                  </label>
+                  <input
+                    className="p-2 rounded w-full border-2 h-fit"
+                    type={'number'}
+                    id="order"
+                    placeholder="Minimum order"
+                    {...register('minOrder')}
+                  />
+                  {errors.minOrder && (
+                    <span className="text-red-500">
+                      {errors.minOrder.message}
+                    </span>
+                  )}
+                </div>
+              </div>
+  
+              <div className="lg:flex lg:justify-between my-3 overflow-hidden">
+                <div className="grid gap-3 my-3 w-full h-fit">
+                  <label htmlFor="sale" className="font-semibold">
+                    Unit Sale:
+                  </label>
+                  <input
+                    className="p-2 rounded w-full border-2 h-fit"
+                    type={'number'}
+                    id="sale"
+                    placeholder="Unit sale"
+                    {...register('unitSale')}
+                  />
+                  {errors.unitSale && (
+                    <span className="text-red-500">
+                      {errors.unitSale.message}
+                    </span>
+                  )}
+                </div>
+              </div>
+  
+              <div className="lg:flex lg:justify-between">
+                <div className="grid gap-3 w-full my-3 mr-3 h-fit">
+                  <label htmlFor="description">Description:</label>
+                  <textarea
+                    className="p-3  w-full rounded border-2 h-fit"
+                    id="description"
+                    placeholder="Product description"
+                    {...register('description')}
+                  ></textarea>
+                  {errors.description && (
+                    <span className="text-red-500">
+                      {errors.description.message}
+                    </span>
+                  )}
+                </div>
+  
+                <div className="grid gap-3 my-3 w-full">
+                  <label htmlFor="note">Note:</label>
+                  <textarea
+                    className="p-3  w-full rounded border-2"
+                    id="note"
+                    placeholder="Product Note"
+                    {...register('note')}
+                  ></textarea>
+                </div>
+              </div>
+  
+              <div className="lg:flex lg:justify-between my-3">
+                <div className="grid gap-3 my-3 w-full mr-3">
+                  <label htmlFor="material">Material:</label>
+                  <input
+                    className="p-2 w-full rounded border-2"
+                    type={'text'}
+                    id="material"
+                    placeholder="Product Material"
+                    {...register('material')}
+                  />
+                  {errors.material && (
+                    <span className="text-red-500">
+                      {errors.material.message}
+                    </span>
+                  )}
+                </div>
+  
+                <div className="grid gap-3 my-3 w-full">
+                  <label htmlFor="images">Choose an image or images:</label>
+                  <input
+                    className="p-2  w-full rounded border-2"
+                    type={'file'}
+                    id="images"
+                    ref={imageRef}
+                    multiple
+                    required
+                  />
+                </div>
+              </div>
+  
+              {isLoading ? (
+                <WideButton name="Creating Product... " />
+              ) : (
+                <WideButton name="Create Product" />
+              )}
+            </form>
+          </div>
         </div>
-      </div>
-    </main>
-  )
+      </main>
+    )
+  }
+  
+  return <><Loading /></>
 }
 
 export default create
