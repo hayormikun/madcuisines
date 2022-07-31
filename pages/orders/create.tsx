@@ -17,11 +17,11 @@ import { useSession } from 'next-auth/react'
 import { Loading } from '../../components/Loading'
 
 const createItem = async (item: FormData): Promise<FormData> => {
-  return await axios.post('http://api.madcuisines.com/order/place-order', item)
+  return await axios.post(`${process.env.Base_Url}/order/place-order`, item)
 }
 
 const getProducts = async () => {
-  const res = await fetch('http://api.madcuisines.com/product/get-products')
+  const res = await fetch(`${process.env.Base_Url}/product/get-products`)
   const data = await res.json()
   return data.data
 }

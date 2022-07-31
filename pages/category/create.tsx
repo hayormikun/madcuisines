@@ -16,7 +16,7 @@ import { useSession } from 'next-auth/react'
 import { Loading } from '../../components/Loading'
 
 const createItem = async (item: FormData): Promise<FormData> => {
-  return await axios.post('http://api.madcuisines.com/category/create', item)
+  return await axios.post(`${process.env.Base_Url}/category/create`, item)
 }
 
 const schema = yup.object().shape({

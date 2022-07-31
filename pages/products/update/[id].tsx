@@ -24,7 +24,7 @@ import { useSession } from 'next-auth/react'
 import { Loading } from '../../../components/Loading'
 
 const getCategories = async () => {
-  const res = await fetch('http://api.madcuisines.com/category/get-categories')
+  const res = await fetch(`${process.env.Base_Url}/get-categories`)
   const data = await res.json()
   return data.data
 }
@@ -32,7 +32,7 @@ const getCategories = async () => {
 const fetchProduct = async (id: string | string[] | undefined) => {
   if (typeof id === 'string') {
     const res = await fetch(
-      `http://api.madcuisines.com/product/get-product/${id}`,
+      `${process.env.Base_Url}/product/get-product/${id}`,
     )
     if (res.ok) {
       const data = await res.json()
@@ -45,7 +45,7 @@ const fetchProduct = async (id: string | string[] | undefined) => {
 }
 
 const updateItem = async (item: FormData): Promise<FormData> => {
-  return await axios.post('http://api.madcuisines.com/product/create', item)
+  return await axios.post(`${process.env.Base_Url}/product/create`, item)
 }
 
 export async function getServerSideProps() {

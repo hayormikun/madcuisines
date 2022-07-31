@@ -10,7 +10,7 @@ import { Sidebar } from "../../../components/Sidebar"
 import { IOrder } from "../../../libs/interfaces/IOrders"
 
 const createOrder = async (order: IOrder): Promise<IOrder> => {
-  return await axios.post('http://api.madcuisines.com/order/place-order', order)
+  return await axios.post(`${process.env.Base_Url}/order/place-order`, order)
 }
 
 const update = () => {
@@ -41,13 +41,7 @@ const update = () => {
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
 
-    const order: IOrder = {
-      userId,
-      products: [{ productId, quantity }],
-    }
 
-    console.log(order)
-    mutate(order)
   }
 
   if (status === 'authenticated') {

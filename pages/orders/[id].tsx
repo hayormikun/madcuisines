@@ -12,7 +12,7 @@ import { Loading } from '../../components/Loading'
 
 const fetchOrder = async (id: string | string[] | undefined) => {
   if (typeof id === 'string') {
-    const res = await fetch(`http://api.madcuisines.com/order/get-order/${id}`)
+    const res = await fetch(`${process.env.Base_Url}/order/get-order/${id}`)
     if (res.ok) {
       const data = await res.json()
       return data.data
@@ -60,7 +60,7 @@ const Details = () => {
 
   const handleDelete = async () => {
     await axios
-      .post(`http://api.madcuisines.com/order/delete-order/${id}`)
+      .post(`${process.env.Base_Url}/order/delete-order/${id}`)
       .then(() => {
         router.push('/orders/index')
       })

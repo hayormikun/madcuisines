@@ -9,7 +9,7 @@ import { Sidebar } from '../../components/Sidebar'
 import { IExtras } from '../../libs/interfaces/IExtras'
 
 const getExtras = async () => {
-  const res = await fetch('http://api.madcuisines.com/extra/get-extras')
+  const res = await fetch(`${process.env.Base_Url}/extra/get-extras`)
   const data = await res.json()
   return data.data
 }
@@ -41,7 +41,7 @@ const extras = () => {
   )
 
 
-  let baseUrl = 'http://api.madcuisines.com'
+  let baseUrl = `${process.env.Base_Url}`
   let imageSrc = ''
 
   if (isLoading) {

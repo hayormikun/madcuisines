@@ -12,7 +12,7 @@ import { Loading } from '../../components/Loading'
 
 const fetchExtra = async (id: string | string[] | undefined) => {
   if (typeof id === 'string') {
-    const res = await fetch(`http://api.madcuisines.com/extra/get-extra/${id}`)
+    const res = await fetch(`${process.env.Base_Url}/extra/get-extra/${id}`)
     if (res.ok) {
       const data = await res.json()
       return data.data
@@ -36,7 +36,7 @@ const Details = () => {
     query: { id },
   } = useRouter()
 
-  let baseUrl = 'http://api.madcuisines.com'
+  let baseUrl = `${process.env.Base_Url}`
   let imageSrc = ''
 
   const { data: extra, isLoading, isError, error } = useQuery(
@@ -60,7 +60,7 @@ const Details = () => {
 
   const handleDelete = async () => {
     await axios
-      .post(`http://api.madcuisines.com/extra/delete-extra/${id}`)
+      .post(`${process.env.Base_Url}/extra/delete-extra/${id}`)
       .then(() => {
         router.push('/extras/index')
       })

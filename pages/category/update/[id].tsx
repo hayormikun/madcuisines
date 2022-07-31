@@ -20,13 +20,13 @@ import { useSession } from 'next-auth/react'
 import { Loading } from '../../../components/Loading'
 
 const updateItem = async (item: FormData): Promise<FormData> => {
-  return await axios.post('http://api.madcuisines.com/category/create', item)
+  return await axios.post(`${process.env.Base_Url}/category/create`, item)
 }
 
 const fetchCategory = async (id: string | string[] | undefined) => {
   if (typeof id === 'string') {
     const res = await fetch(
-      `http://api.madcuisines.com/category/get-category/${id}`,
+      `${process.env.Base_Url}/category/get-category/${id}`,
     )
     if (res.ok) {
       return res.json()

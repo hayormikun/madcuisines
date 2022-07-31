@@ -16,13 +16,13 @@ import { useSession } from 'next-auth/react'
 import { Loading } from '../../components/Loading'
 
 const getCategories = async () => {
-  const res = await fetch('http://api.madcuisines.com/category/get-categories')
+  const res = await fetch(`${process.env.Base_Url}/category/get-categories`)
   const data = await res.json()
   return data.data
 }
 
 const createItem = async (item: FormData): Promise<FormData> => {
-  return await axios.post('http://api.madcuisines.com/product/create', item)
+  return await axios.post(`${process.env.Base_Url}/product/create`, item)
 }
 
 const schema = yup.object().shape({

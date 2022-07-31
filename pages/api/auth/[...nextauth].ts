@@ -1,6 +1,8 @@
 import axios from 'axios';
 import NextAuth, {NextAuthOptions} from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
+import { redirect } from 'next/dist/server/api-utils';
+import { Router } from 'next/router';
 
 const authOptions: NextAuthOptions = {
     session: {
@@ -10,26 +12,25 @@ const authOptions: NextAuthOptions = {
         CredentialsProvider({
             type: 'credentials',
             credentials: {},
-            authorize(credentials, req){
+            async authorize(credentials, req) {
+              
                 const {
-                    email,
+                    user,
                     password,
                 } = credentials as {
-                    email: string,
+                    user: string,
                     password: string,
                 }
-
-            
-const loginUser = async (authUser: FormData): Promise<FormData> => {
-    return await axios.post('http://api.madcuisines.com/user/login', authUser)
-  }
-            if (email !== "john@go.com" || password !== '1234') {
-                throw new Error('Invalid Login Details')
-            }
-
-            return { id: '1234', name: 'john doe', email: 'john@go.com'}
-            }
-        })
+                
+                const admin = await axios.post(`${process.env.Base_Url}/user/login`, credentials)
+          
+                if (admin) {
+                  return admin
+                } else {
+                  return null
+                }
+              }
+            })
     ],
     pages: {
         signIn: '/auth/login',

@@ -9,7 +9,7 @@ import { Sidebar } from '../../components/Sidebar'
 import { IProducts } from '../../libs/interfaces/IProducts'
 
 const getProducts = async () => {
-  const res = await fetch('http://api.madcuisines.com/product/get-products')
+  const res = await fetch(`${process.env.Base_Url}/product/get-products`)
   const data = await res.json()
   return data.data
 }
@@ -35,7 +35,7 @@ const products = () => {
     router.replace('/auth/login')
   }, [status])
 
-  let baseUrl = 'http://api.madcuisines.com'
+  let baseUrl = `${process.env.Base_Url}`
   let imageSrc = ''
   
   const { data: products, isLoading, isError, error } = useQuery(
@@ -93,7 +93,7 @@ const products = () => {
     )
   }
 
-  return  
+  return <><Loading /></>
 }
 
 export default products

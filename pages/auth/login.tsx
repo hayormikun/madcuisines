@@ -8,12 +8,9 @@ import { ILogin } from '../../libs/interfaces/ILogin'
 import { signIn } from 'next-auth/react'
 import * as yup from 'yup'
 import { yupResolver } from '@hookform/resolvers/yup'
-import axios from 'axios'
-
-
 
 const schema = yup.object().shape({
-  email: yup.string().required(),
+  user: yup.string().required(),
   password: yup.string().required(),
 })
 
@@ -45,11 +42,11 @@ const login = () => {
   const onSubmit: SubmitHandler<FormInputs | ILogin> = async (
     authUser: FormInputs | ILogin,
   ) => {
-    const { email, password } = authUser
+    const { user, password } = authUser
     
 
    const res = await signIn('credentials', {
-      email,
+      user,
       password,
       redirect: false
     })
@@ -79,7 +76,7 @@ const login = () => {
               <input
                 className="w-full border-2 rounded bg-gray-100 font-semibold py-4 px-3 shadow-sm"
                 type={'email'}
-                {...register('email')}
+                {...register('user')}
               />
               <div className={`${show} top-4 right-2`}>
                 <span className="flex text-gray-400 text-sm">

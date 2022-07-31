@@ -13,7 +13,7 @@ import { Loading } from '../../components/Loading'
 const fetchProduct = async (id: string | string[] | undefined) => {
   if (typeof id === 'string') {
     const res = await fetch(
-      `http://api.madcuisines.com/product/get-product/${id}`,
+      `${process.env.Base_Url}/product/get-product/${id}`,
     )
     if (res.ok) {
       const data = await res.json()
@@ -40,7 +40,7 @@ const Details = () => {
     query: { id },
   } = useRouter()
 
-  let baseUrl = 'http://api.madcuisines.com'
+  let baseUrl = `${process.env.Base_Url}`
   let imageSrc = ''
 
   const { data: product, isLoading, isError, error } = useQuery(
@@ -66,7 +66,7 @@ const Details = () => {
 
   const handleDelete = async () => {
     await axios
-      .post(`http://api.madcuisines.com/product/delete-product/${id}`)
+      .post(`${process.env.Base_Url}/product/delete-product/${id}`)
       .then(() => {
         router.push('/products/index')
       })

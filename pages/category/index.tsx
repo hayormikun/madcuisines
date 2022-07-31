@@ -11,7 +11,7 @@ import { Sidebar } from '../../components/Sidebar'
 import { ICategories } from '../../libs/interfaces/ICategory'
 
 const getCategories = async()=>{
-  const res = await fetch('http://api.madcuisines.com/category/get-categories')
+  const res = await fetch(`${process.env.Base_Url}/category/get-categories`)
   const data = await res.json()
   return data.data
 }
@@ -41,7 +41,7 @@ const category = () => {
 
 
   const deleteCategory = async(id: string)=>{
-    return await axios.post(`http://api.madcuisines.com/category/delete-category/${id}`).then(()=>{
+    return await axios.post(`${process.env.Base_Url}/category/delete-category/${id}`).then(()=>{
      refetch
     })
   }

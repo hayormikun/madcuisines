@@ -4,7 +4,6 @@ import { Heading } from '../../components/Heading'
 import { Sidebar } from '../../components/Sidebar'
 import { Status } from '../../components/Status'
 import { IOrders } from '../../libs/interfaces/IOrders'
-import { CurrencyPoundIcon } from '@heroicons/react/outline'
 import { format } from 'date-fns'
 import Link from 'next/link'
 import { useEffect } from 'react'
@@ -13,7 +12,7 @@ import { useSession } from 'next-auth/react'
 import { Loading } from '../../components/Loading'
 
 const getOrders = async () => {
-  const res = await fetch('http://api.madcuisines.com/order/get-orders')
+  const res = await fetch(`${process.env.Base_Url}/order/get-orders`)
   const data = await res.json()
   return data.data
 }
