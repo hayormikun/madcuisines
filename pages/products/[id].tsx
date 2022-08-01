@@ -53,8 +53,8 @@ const Details = () => {
 
   console.log(product)
 
-  const createdAt = new Date(product?.dateCreated)
-  const date = format(createdAt, 'dd/mm/yyyy')
+  // const createdAt = new Date(product?.dateCreated)
+  // const date = format(createdAt, 'dd/mm/yyyy')
 
   if (isLoading) {
     return <><Loading /></>
@@ -140,9 +140,9 @@ const Details = () => {
                         ${product?.falsePrice}
                       </span>
                     </li>
-                    <li className="mb-3">
+                    {/* <li className="mb-3">
                       Date Created: <span className="text-gray-600">{date}</span>
-                    </li>
+                    </li> */}
                   </ul>
   
                   <div className="flex justify-start items-center my-3">

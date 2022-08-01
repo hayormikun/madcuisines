@@ -94,7 +94,7 @@ const category = () => {
                   </span>{' '}
                 </td>
                 <td>
-                  <span className="p-3 flex" onClick={mutate}>
+                  <span className="p-3 flex">
                     Delete <TrashIcon className="ml-2 w-5" />
                   </span>
                 </td>

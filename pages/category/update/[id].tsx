@@ -20,7 +20,7 @@ import { useSession } from 'next-auth/react'
 import { Loading } from '../../../components/Loading'
 
 const updateItem = async (item: FormData): Promise<FormData> => {
-  return await axios.post(`${process.env.Base_Url}/category/create`, item)
+  return await axios.post(`${process.env.Base_Url}/category/update-category`, item)
 }
 
 const fetchCategory = async (id: string | string[] | undefined) => {
@@ -69,13 +69,6 @@ const update = () => {
     query: { id },
   } = useRouter()
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<ICategory>({
-    resolver: yupResolver(schema),
-  })
 
   const { data: category } = useQuery(
     ['category', id],
@@ -84,6 +77,19 @@ const update = () => {
       enabled: !!id,
     },
   )
+
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors },
+  } = useForm<ICategory>({
+    resolver: yupResolver(schema),
+    defaultValues: {
+      name: category.name,
+      description: category.description
+    }
+  })
 
   const {
     mutate,
@@ -97,7 +103,7 @@ const update = () => {
     FormData
   >(updateItem)
 
-  const onSubmit: SubmitHandler<FormInputs | ICategory> = (item: FormInputs | ICategory) => {
+  const onSubmit: SubmitHandler<ICategory> = (item: ICategory) => {
     const {
       name,
       description
@@ -120,13 +126,13 @@ const update = () => {
           createLink="/category/create"
         />
         <div className="mt-5 w-full lg:w-10/12">
-          <Heading heading="Create Category" />
+          <Heading heading="Update Category" />
   
           <div className="grid">
             {isError
-              ? `Error encountered while creating Category: ${error.message}`
+              ? `Error encountered while updating Category: ${error.message}`
               : ''}
-            {isSuccess ? 'Category created successfully' : ''}
+            {isSuccess ? 'Category updated successfully' : ''}
             <form
               onSubmit={handleSubmit(onSubmit)}
               className="text-gray-700 font-semibold mx-auto w-6/12"
@@ -138,7 +144,9 @@ const update = () => {
                   type={'text'}
                   {...register('name')}
                   id="name"
-                  placeholder={category.name}
+                  name="name"
+                  placeholder="Category Name"
+                  onChange={(e)=>{setValue('name', e.target.value, { shouldValidate: true })}}
                 />
                 {errors.name && (
                   <span className="text-red-500">{errors.name.message}</span>
@@ -149,10 +157,13 @@ const update = () => {
                 <label htmlFor="description">Category Description:</label>
                 <textarea
                   className="p-3  w-full rounded border-2"
-                  id="description"
-                  placeholder={category.description}
                   {...register('description')}
+                  id="description"
+                  name="description"
+                  placeholder="Product description"
+                  onChange={(e)=>{setValue('description', e.target.value, { shouldValidate: true })}}
                 ></textarea>
+
                 {errors.description && (
                   <span className="text-red-500">
                     {errors.description.message}

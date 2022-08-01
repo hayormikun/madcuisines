@@ -3,11 +3,9 @@ import { SubmitHandler, useForm } from 'react-hook-form'
 import {
   dehydrate,
   QueryClient,
-  UseBaseQueryResult,
   useMutation,
   UseMutationResult,
   useQuery,
-  UseQueryResult,
 } from 'react-query'
 import { WideButton } from '../../../components/Button'
 import { Heading } from '../../../components/Heading'
@@ -23,10 +21,9 @@ import { useRouter } from 'next/router'
 import { useSession } from 'next-auth/react'
 import { Loading } from '../../../components/Loading'
 
-const getCategories = async () => {
-  const res = await fetch(`${process.env.Base_Url}/get-categories`)
-  const data = await res.json()
-  return data.data
+
+const updateItem = async (item: FormData): Promise<FormData> => {
+  return await axios.post(`${process.env.Base_Url}/product/update-product`, item)
 }
 
 const fetchProduct = async (id: string | string[] | undefined) => {
@@ -44,9 +41,6 @@ const fetchProduct = async (id: string | string[] | undefined) => {
   throw new Error('invalid id')
 }
 
-const updateItem = async (item: FormData): Promise<FormData> => {
-  return await axios.post(`${process.env.Base_Url}/product/create`, item)
-}
 
 export async function getServerSideProps() {
   const queryClient = new QueryClient()
@@ -63,41 +57,48 @@ export async function getServerSideProps() {
   }
 }
 
-// const schema = yup.object().shape({
-//   name: yup.string().required().max(30),
-//   categoryId: yup.string().required('Select a category'),
-//   material: yup.string().required('Product material is required').max(30),
-//   description: yup
-//     .string()
-//     .required('Product description is required')
-//     .max(200),
-//   note: yup.string().required('Product note is required').max(150),
-//   unitOfMeasurement: yup
-//     .string()
-//     .required('Unit of measurement is required')
-//     .max(20),
-//   quantityAvailable: yup
-//     .number()
-//     .positive('Quantity must be greater than zero')
-//     .integer('Quantity must be a whole number')
-//     .required('Available Quantity is required'),
-//   unitPrice: yup
-//     .number()
-//     .positive('Price must be greater than zero')
-//     .required('Product price is required'),
-//   unitSale: yup
-//     .number()
-//     .positive('Unit sale must be greater than zero')
-//     .required('Unit sale is required'),
-//   falsePrice: yup.number().required('Discount price is required'),
-//   minOrder: yup
-//     .number()
-//     .positive('Order must be greater than zero')
-//     .integer('Quantity must be a whole number')
-//     .required('Minimum order is required'),
-// })
+const getCategories = async () => {
+  const res = await fetch(`${process.env.Base_Url}/get-categories`)
+  const data = await res.json()
+  return data.data
+}
 
-// type FormInputs = yup.InferType<typeof schema>
+
+const schema = yup.object().shape({
+  name: yup.string().required().max(30),
+  categoryId: yup.string().required('Select a category'),
+  material: yup.string().required('Product material is required').max(30),
+  description: yup
+    .string()
+    .required('Product description is required')
+    .max(200),
+  note: yup.string().required('Product note is required').max(150),
+  unitOfMeasurement: yup
+    .string()
+    .required('Unit of measurement is required')
+    .max(20),
+  quantityAvailable: yup
+    .number()
+    .positive('Quantity must be greater than zero')
+    .integer('Quantity must be a whole number')
+    .required('Available Quantity is required'),
+  unitPrice: yup
+    .number()
+    .positive('Price must be greater than zero')
+    .required('Product price is required'),
+  unitSale: yup
+    .number()
+    .positive('Unit sale must be greater than zero')
+    .required('Unit sale is required'),
+  falsePrice: yup.number().required('Discount price is required'),
+  minOrder: yup
+    .number()
+    .positive('Order must be greater than zero')
+    .integer('Quantity must be a whole number')
+    .required('Minimum order is required'),
+})
+
+type FormInputs = yup.InferType<typeof schema>
 
 const update = () => {
   const { status, data } = useSession()
@@ -112,24 +113,22 @@ const update = () => {
     query: { id },
   } = useRouter()
 
-  const imageRef = useRef<HTMLInputElement>(null)
+  const { data: product } = useQuery(['product', id], () => fetchProduct(id), {
+    enabled: !!id,
+  })
 
-  const { data: product }: UseBaseQueryResult<IProduct> = useQuery<IProduct>(
-    ['product', id],
-    () => fetchProduct(id),
-    {
-      enabled: !!id,
-    },
-  )
 
   const { data: categories } = useQuery('categories', getCategories)
+
+  const imageRef = useRef<HTMLInputElement>(product.images)
 
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<IProduct>({
-    // resolver: yupResolver(schema),
+    resolver: yupResolver(schema),
     shouldUseNativeValidation: true,
 
     defaultValues: {
@@ -144,7 +143,6 @@ const update = () => {
       note: product?.note,
       falsePrice: product?.falsePrice,
       minOrder: product?.minOrder,
-      images: product?.images,
     },
   })
 
@@ -162,7 +160,7 @@ const update = () => {
 
   console.log(product)
 
-  const onSubmit: SubmitHandler<IProduct> = (item: IProduct) => {
+  const onSubmit: SubmitHandler<FormInputs | IProduct> = (item: FormInputs | IProduct) => {
     const {
       name,
       description,
@@ -214,7 +212,7 @@ const update = () => {
         />
   
         <div className="mt-5 w-full lg:w-10/12">
-          <Heading heading={`update ${product?.name}`} />
+          <Heading heading={'Update product'} />
   
           <div className="grid">
             {isError ? (
@@ -232,10 +230,13 @@ const update = () => {
                 <label htmlFor="name">Product Name:</label>
                 <input
                   className="p-2 w-full rounded border-2"
-                  type={'text'}
+                  {...register('name')}
+                  name="name"
                   id="name"
                   placeholder={product?.name}
-                  {...register('name')}
+                  onChange={(e) => {
+                    setValue('name', e.target.value, { shouldValidate: true })
+                  }}
                 />
               </div>
   
@@ -244,9 +245,15 @@ const update = () => {
                   <label htmlFor="category">Categories:</label>
                   <select
                     className="p-2 rounded border-2"
-                    id="category"
-                    placeholder={product?.categoryId}
                     {...register('categoryId')}
+                    id="category"
+                    name="categotyId"
+                    placeholder="Select Category"
+                    onChange={(e) => {
+                      setValue('categoryId', e.target.value, {
+                        shouldValidate: true,
+                      })
+                    }}
                   >
                     {categories?.map((category: ICategories) => (
                       <option
@@ -265,9 +272,15 @@ const update = () => {
                   <input
                     className="p-2 w-full rounded border-2 h-fit"
                     type={'text'}
-                    id="measurement"
-                    placeholder={product?.unitOfMeasurement}
-                    {...register('unitOfMeasurement')}
+                    {...register('quantityAvailable')}
+                    id="quantity"
+                    name="quantityAvailable"
+                    placeholder="Available Quantity"
+                    onChange={(e) => {
+                      setValue('quantityAvailable', e.target.value, {
+                        shouldValidate: true,
+                      })
+                    }}
                   />
                 </div>
   
@@ -289,9 +302,15 @@ const update = () => {
                   <input
                     className="p-2 rounded w-full border-2 h-fit"
                     type={'number'}
-                    id="price"
-                    placeholder={product?.unitPrice}
                     {...register('unitPrice')}
+                    id="price"
+                    name="unitPrice"
+                    placeholder="Unit price"
+                    onChange={(e) => {
+                      setValue('unitPrice', e.target.value, {
+                        shouldValidate: true,
+                      })
+                    }}
                   />
                 </div>
   
@@ -300,9 +319,15 @@ const update = () => {
                   <input
                     className="p-2 rounded w-full border-2 h-fit"
                     type={'number'}
-                    id="bonus"
-                    placeholder={product?.falsePrice}
                     {...register('falsePrice')}
+                    id="bonus"
+                    name="falsePrice"
+                    placeholder="Discount price"
+                    onChange={(e) => {
+                      setValue('falsePrice', e.target.value, {
+                        shouldValidate: true,
+                      })
+                    }}
                   />
                 </div>
   
@@ -313,9 +338,15 @@ const update = () => {
                   <input
                     className="p-2 rounded w-full border-2 h-fit"
                     type={'number'}
-                    id="order"
-                    placeholder={product?.minOrder}
                     {...register('minOrder')}
+                    id="order"
+                    name="minOrder"
+                    placeholder="Minimum order"
+                    onChange={(e) => {
+                      setValue('minOrder', e.target.value, {
+                        shouldValidate: true,
+                      })
+                    }}
                   />
                 </div>
               </div>
@@ -328,9 +359,15 @@ const update = () => {
                   <input
                     className="p-2 rounded w-full border-2 h-fit"
                     type={'number'}
-                    id="sale"
-                    placeholder={product?.unitSale}
                     {...register('unitSale')}
+                    id="sale"
+                    name="unitSale"
+                    placeholder="Unit sale"
+                    onChange={(e) => {
+                      setValue('unitSale', e.target.value, {
+                        shouldValidate: true,
+                      })
+                    }}
                   />
                 </div>
               </div>
@@ -340,9 +377,15 @@ const update = () => {
                   <label htmlFor="description">Description:</label>
                   <textarea
                     className="p-3  w-full rounded border-2 h-fit"
-                    id="description"
-                    placeholder={product?.description}
                     {...register('description')}
+                    id="description"
+                    name="description"
+                    placeholder="Product description"
+                    onChange={(e) => {
+                      setValue('description', e.target.value, {
+                        shouldValidate: true,
+                      })
+                    }}
                   ></textarea>
                 </div>
   
@@ -350,9 +393,13 @@ const update = () => {
                   <label htmlFor="note">Note:</label>
                   <textarea
                     className="p-3  w-full rounded border-2"
-                    id="note"
-                    placeholder={product?.note}
                     {...register('note')}
+                    id="note"
+                    name="note"
+                    placeholder="Product Note"
+                    onChange={(e) => {
+                      setValue('note', e.target.value, { shouldValidate: true })
+                    }}
                   ></textarea>
                 </div>
               </div>
@@ -363,9 +410,15 @@ const update = () => {
                   <input
                     className="p-2 w-full rounded border-2"
                     type={'text'}
-                    id="material"
-                    placeholder={product?.material}
                     {...register('material')}
+                    id="material"
+                    name="material"
+                    placeholder="Product Material"
+                    onChange={(e) => {
+                      setValue('material', e.target.value, {
+                        shouldValidate: true,
+                      })
+                    }}
                   />
                 </div>
   

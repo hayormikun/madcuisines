@@ -1,50 +1,201 @@
-import { useSession } from 'next-auth/react'
-import { useRouter } from 'next/router'
-import { FormEvent, useEffect, useState } from 'react'
+import axios from 'axios'
+import {
+  dehydrate,
+  QueryClient,
+  useMutation,
+  UseMutationResult,
+  useQuery,
+} from 'react-query'
 import { WideButton } from '../../../components/Button'
 import { Heading } from '../../../components/Heading'
-import { Loading } from '../../../components/Loading'
 import { Sidebar } from '../../../components/Sidebar'
+import { IExtra } from '../../../libs/interfaces/IExtras'
+import { ICategories } from '../../../libs/interfaces/ICategory'
+import { yupResolver } from '@hookform/resolvers/yup'
+import * as yup from 'yup'
+import { useEffect, useRef } from 'react'
+import { SubmitHandler, useForm } from 'react-hook-form'
+import { Success } from '../../../components/Success'
+import { ErrorPrompt } from '../../../components/ErrorPrompt'
+import { IProducts } from '../../../libs/interfaces/IProducts'
+import { useRouter } from 'next/router'
+import { useSession } from 'next-auth/react'
+import { Loading } from '../../../components/Loading'
+
+const updateItem = async (item: FormData): Promise<FormData> => {
+  return await axios.post(`${process.env.Base_Url}/extra/update-extra`, item)
+}
+
+const fetchExtra = async (id: string | string[] | undefined) => {
+  if (typeof id === 'string') {
+    const res = await fetch(`${process.env.Base_Url}/extra/get-extra/${id}`)
+    if (res.ok) {
+      return res.json()
+    }
+    throw new Error('error fetching product with id')
+  }
+
+  throw new Error('invalid id')
+}
+
+export async function getServerSideProps() {
+  const queryClient = new QueryClient()
+
+  await queryClient.prefetchQuery<IExtra>('extra')
+
+  return {
+    props: {
+      dehydratedState: dehydrate(queryClient),
+    },
+  }
+}
+
+const getCategories = async () => {
+  const res = await fetch(`${process.env.Base_Url}/category/get-categories`)
+  const data = await res.json()
+  return data.data
+}
+
+const getProducts = async () => {
+  const res = await fetch(`${process.env.Base_Url}/product/get-products`)
+  const data = await res.json()
+  return data.data
+}
+
+const schema = yup.object().shape({
+  name: yup.string().required().max(30),
+  productId: yup.string().required('Select a product'),
+  categoryId: yup.string().required('Select a category'),
+  material: yup.string().required('Extra material is required').max(30),
+  description: yup.string().required('Extra description is required').max(200),
+  note: yup.string().required('Extra note is required').max(150),
+  unitOfMeasurement: yup
+    .string()
+    .required('Unit of measurement is required')
+    .max(20),
+  quantityAvailable: yup
+    .number()
+    .positive('Quantity must be greater than zero')
+    .integer('Quantity must be a whole number')
+    .required('Available Quantity is required'),
+  unitPrice: yup
+    .number()
+    .positive('Price must be greater than zero')
+    .required('Extra price is required'),
+  unitSale: yup
+    .number()
+    .positive('Unit sale must be greater than zero')
+    .required('Unit sale is required'),
+  falsePrice: yup.number().required('Discount price is required'),
+
+  minOrder: yup
+    .number()
+    .positive('Order must be greater than zero')
+    .integer('Quantity must be a whole number')
+    .required('Minimum order is required'),
+})
+
+type FormInputs = yup.InferType<typeof schema>
 
 const update = () => {
   const { status, data } = useSession()
-  
+
   const router = useRouter()
-  useEffect(()=>{
-    if (status === 'unauthenticated')
-    router.replace('/auth/login')
+  useEffect(() => {
+    if (status === 'unauthenticated') router.replace('/auth/login')
   }, [status])
 
-  const [name, setName] = useState<string>('')
-  const [category, setCategory] = useState<string>('')
-  const [measurement, setMeasurement] = useState<string>('')
-  const [quantity, setQuantity] = useState<number>(0)
-  const [price, setPrice] = useState<number>(0)
-  const [bonus, setBonus] = useState<number>(0)
-  const [order, setOrder] = useState<number>(0)
-  const [description, setDescription] = useState<string>('')
-  const [note, setNote] = useState<string>('')
-  const [material, setMaterial] = useState<string>('')
-  const [images, setImages] = useState('')
+  const {
+    query: { id },
+  } = useRouter()
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
+  const { data: extra } = useQuery(['extra', id], () => fetchExtra(id), {
+    enabled: !!id,
+  })
 
-    const extra = {
+  const imageRef = useRef<HTMLInputElement>(extra.images)
+
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors },
+  } = useForm<IExtra>({
+    resolver: yupResolver(schema),
+    defaultValues: {
+      name: extra.name,
+      description: extra.description,
+      productId: extra.productId,
+      categoryId: extra.categoryId,
+      unitOfMeasurement: extra.unitOfMeasurement,
+      quantityAvailable: extra.quantityAvailable,
+      unitPrice: extra.unitPrice,
+      unitSale: extra.unitSale,
+      material: extra.material,
+      note: extra.note,
+      falsePrice: extra.falsePrice,
+      minOrder: extra.minOrder,
+    },
+  })
+  const { data: categories } = useQuery('categories', getCategories)
+  const { data: products } = useQuery('products', getProducts)
+
+  const {
+    mutate,
+    isLoading,
+    isError,
+    error,
+    isSuccess,
+  }: UseMutationResult<FormData, Error, FormData> = useMutation<
+    FormData,
+    Error,
+    FormData
+  >(updateItem)
+
+  const onSubmit: SubmitHandler<FormInputs | IExtra> = (
+    item: FormInputs | IExtra,
+  ) => {
+    const {
       name,
-      category,
-      measurement,
-      quantity,
-      price,
-      bonus,
-      order,
       description,
-      note,
+      productId,
+      categoryId,
+      unitOfMeasurement,
+      quantityAvailable,
+      unitPrice,
+      unitSale,
       material,
-      images,
+      note,
+      falsePrice,
+      minOrder,
+    } = item
+
+    const formData = new FormData()
+    formData.append('name', name)
+    formData.append('description', description)
+    formData.append('productId', productId)
+    formData.append('categoryId', categoryId)
+    formData.append('unitOfMeasurement', unitOfMeasurement)
+    formData.append('quantityAvailable', quantityAvailable.toString())
+    formData.append('unitPrice', unitPrice.toString())
+    formData.append('unitSale', unitSale.toString())
+    formData.append('material', material)
+    formData.append('note', note)
+    formData.append('falsePrice', falsePrice.toString())
+    formData.append('minOrder', minOrder.toString())
+
+    if (imageRef.current?.files != undefined) {
+      const imgLen = imageRef.current.files.length
+
+      for (let i = 0; i < imgLen; i++) {
+        formData.append('images', imageRef.current.files[i])
+      }
     }
 
-    console.log(extra)
+    formData.forEach((key) => {
+      console.log(key)
+    })
+    mutate(formData)
   }
 
   if (status === 'authenticated') {
@@ -56,13 +207,18 @@ const update = () => {
           viewLink="/extras"
           createLink="/extras/create"
         />
-  
+
         <div className="mt-5 w-full lg:w-10/12">
-          <Heading heading="Update Extra" />
+          <Heading heading="Create Extra" />
           <div className="grid">
+            {isError ? (
+              <ErrorPrompt item="extra" msg={error.message.toLowerCase()} />
+            ) : (
+              ''
+            )}
+            {isSuccess ? <Success item="extra" /> : ''}
             <form
-              onSubmit={handleSubmit}
-              action="POST"
+              onSubmit={handleSubmit(onSubmit)}
               encType="multipart/formdata"
               className="text-gray-700 font-semibold mx-auto w-6/12"
             >
@@ -71,170 +227,301 @@ const update = () => {
                 <input
                   className="p-2 w-full rounded border-2"
                   type={'text'}
+                  {...register('name')}
+                  name="name"
                   id="name"
                   placeholder="Extra name"
-                  value={name}
                   onChange={(e) => {
-                    setName(e.target.value)
+                    setValue('name', e.target.value, { shouldValidate: true })
                   }}
-                  required
                 />
+
+                {errors.name && (
+                  <span className="text-red-500">{errors.name.message}</span>
+                )}
               </div>
-  
+
               <div className="lg:flex lg:justify-between my-3 overflow-hidden">
-                <div className="grid gap-3 w-full my-3 mr-3">
-                  <label htmlFor="category">Categories:</label>
+                <div className="grid gap-3 w-full my-3 mr-3 h-fit">
+                  <label htmlFor="category">Select Category:</label>
                   <select
                     className="p-2 rounded border-2"
+                    {...register('categoryId')}
                     id="category"
+                    name="categotyId"
                     placeholder="Select Category"
-                    value={category}
                     onChange={(e) => {
-                      setCategory(e.target.value)
+                      setValue('categoryId', e.target.value, {
+                        shouldValidate: true,
+                      })
                     }}
-                    required
                   >
-                    <option value="Native">Native</option>
-                    <option value="Snacks">Snacks</option>
-                    <option value="Dessert">Dessert</option>
+                    {categories?.map((category: ICategories) => (
+                      <option
+                        className="h-fit w-fit"
+                        key={category.categoryId}
+                        value={category.categoryId}
+                      >
+                        {category.name}
+                      </option>
+                    ))}
                   </select>
+                  {errors.categoryId && (
+                    <span className="text-red-500">
+                      {errors.categoryId.message}
+                    </span>
+                  )}
                 </div>
-  
-                <div className="grid gap-3 w-full my-3 mr-3">
-                  <label htmlFor="measurement">Measuring Unit:</label>
-                  <input
-                    className="p-2 w-full rounded border-2"
-                    type={'text'}
-                    id="measurement"
-                    placeholder="Measuring unit"
-                    value={measurement}
-                    onChange={(e) => {
-                      setMeasurement(e.target.value)
-                    }}
-                    required
-                  />
-                </div>
-  
-                <div className="grid gap-3 my-3 w-full">
-                  <label htmlFor="quantity">Available Quantity:</label>
-                  <input
+
+                <div className="grid gap-3 w-full my-3 mr-3 h-fit">
+                  <label htmlFor="product">Select Product:</label>
+                  <select
                     className="p-2 rounded border-2"
-                    type={'number'}
-                    id="quantity"
-                    placeholder="Extra quantity"
-                    value={quantity}
+                    {...register('productId')}
+                    id="product"
+                    name="productId"
+                    placeholder="Select product"
                     onChange={(e) => {
-                      setQuantity(e.target.valueAsNumber)
+                      setValue('productId', e.target.value, {
+                        shouldValidate: true,
+                      })
                     }}
-                  />
+                  >
+                    {products?.map((product: IProducts) => (
+                      <option
+                        className="h-fit w-fit"
+                        key={product.productId}
+                        value={product.productId}
+                      >
+                        {product.name}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.productId && (
+                    <span className="text-red-500">
+                      {errors.productId.message}
+                    </span>
+                  )}
                 </div>
               </div>
-  
+
               <div className="lg:flex lg:justify-between my-3 overflow-hidden">
-                <div className="grid gap-3 w-full my-3 mr-3">
+                <div className="grid gap-3 w-full my-3 mr-3 h-fit">
                   <label htmlFor="price">Price:</label>
                   <input
-                    className="p-2 rounded w-full border-2"
+                    className="p-2 rounded w-full border-2 h-fit"
                     type={'number'}
+                    {...register('unitPrice')}
                     id="price"
+                    name="unitPrice"
                     placeholder="Unit price"
-                    value={price}
                     onChange={(e) => {
-                      setPrice(e.target.valueAsNumber)
+                      setValue('unitPrice', e.target.value, {
+                        shouldValidate: true,
+                      })
                     }}
                   />
+                  {errors.unitPrice && (
+                    <span className="text-red-500">
+                      {errors.unitPrice.message}
+                    </span>
+                  )}
                 </div>
-  
-                <div className="grid gap-3 w-full my-3 mr-3">
-                  <label htmlFor="bonus">Bonus Price:</label>
+
+                <div className="grid gap-3 w-full my-3 mr-3 h-fit">
+                  <label htmlFor="bonus">Discount Price:</label>
                   <input
-                    className="p-2 rounded w-full border-2"
+                    className="p-2 rounded w-full border-2 h-fit"
                     type={'number'}
+                    {...register('falsePrice')}
                     id="bonus"
-                    placeholder="Bonus price"
-                    value={bonus}
+                    name="falsePrice"
+                    placeholder="Discount price"
                     onChange={(e) => {
-                      setBonus(e.target.valueAsNumber)
+                      setValue('falsePrice', e.target.value, {
+                        shouldValidate: true,
+                      })
                     }}
                   />
+                  {errors.falsePrice && (
+                    <span className="text-red-500">
+                      {errors.falsePrice.message}
+                    </span>
+                  )}
                 </div>
-  
-                <div className="grid gap-3 my-3 w-full">
+
+                <div className="grid gap-3 my-3 w-full h-fit">
                   <label htmlFor="order" className="font-semibold">
                     Min Order:
                   </label>
                   <input
-                    className="p-2 rounded w-full border-2"
+                    className="p-2 rounded w-full border-2 h-fit"
                     type={'number'}
+                    {...register('minOrder')}
                     id="order"
-                    placeholder="Minimum order "
-                    value={order}
+                    name="minOrder"
+                    placeholder="Minimum order"
                     onChange={(e) => {
-                      setOrder(e.target.valueAsNumber)
+                      setValue('minOrder', e.target.value, {
+                        shouldValidate: true,
+                      })
                     }}
                   />
+                  {errors.minOrder && (
+                    <span className="text-red-500">
+                      {errors.minOrder.message}
+                    </span>
+                  )}
                 </div>
               </div>
+
+              <div className="lg:flex lg:justify-between my-3 overflow-hidden">
+                <div className="grid gap-3 w-full my-3 mr-3 h-fit">
+                  <label htmlFor="measurement">Measuring Unit:</label>
+                  <input
+                    className="p-2 w-full rounded border-2 h-fit"
+                    type={'text'}
+                    {...register('unitOfMeasurement')}
+                    id="measurement"
+                    name="unitOfMeasurement"
+                    placeholder="Measuring unit"
+                    onChange={(e) => {
+                      setValue('unitOfMeasurement', e.target.value, {
+                        shouldValidate: true,
+                      })
+                    }}
+                  />
+                  {errors.unitOfMeasurement && (
+                    <span className="text-red-500">
+                      {errors.unitOfMeasurement.message}
+                    </span>
+                  )}
+                </div>
+
+                <div className="grid gap-3 my-3 mr-3 w-full h-fit">
+                  <label htmlFor="quantity">Available Quantity:</label>
+                  <input
+                    className="p-2 rounded border-2 h-fit"
+                    type={'number'}
+                    {...register('quantityAvailable')}
+                    id="quantity"
+                    name="quantityAvailable"
+                    placeholder="Available Quantity"
+                    onChange={(e) => {
+                      setValue('quantityAvailable', e.target.value, {
+                        shouldValidate: true,
+                      })
+                    }}
+                  />
+                  {errors.quantityAvailable && (
+                    <span className="text-red-500">
+                      {errors.quantityAvailable.message}
+                    </span>
+                  )}
+                </div>
+                <div className="grid gap-3 my-3 w-full h-fit">
+                  <label htmlFor="sale" className="font-semibold">
+                    Unit Sale:
+                  </label>
+                  <input
+                    className="p-2 rounded w-full border-2 h-fit"
+                    type={'number'}
+                    {...register('unitSale')}
+                    id="sale"
+                    name="unitSale"
+                    placeholder="Unit sale"
+                    onChange={(e) => {
+                      setValue('unitSale', e.target.value, {
+                        shouldValidate: true,
+                      })
+                    }}
+                  />
+                  {errors.unitSale && (
+                    <span className="text-red-500">
+                      {errors.unitSale.message}
+                    </span>
+                  )}
+                </div>
+              </div>
+
               <div className="lg:flex lg:justify-between">
-                <div className="grid gap-3 w-full my-3 mr-3">
+                <div className="grid gap-3 w-full my-3 mr-3 h-fit">
                   <label htmlFor="description">Description:</label>
                   <textarea
-                    className="p-3  w-full rounded border-2"
+                    className="p-3  w-full rounded border-2 h-fit"
+                    {...register('description')}
                     id="description"
+                    name="description"
                     placeholder="Extra description"
-                    value={description}
                     onChange={(e) => {
-                      setDescription(e.target.value)
+                      setValue('description', e.target.value, {
+                        shouldValidate: true,
+                      })
                     }}
-                    required
                   ></textarea>
+                  {errors.description && (
+                    <span className="text-red-500">
+                      {errors.description.message}
+                    </span>
+                  )}
                 </div>
-  
+
                 <div className="grid gap-3 my-3 w-full">
                   <label htmlFor="note">Note:</label>
                   <textarea
                     className="p-3  w-full rounded border-2"
+                    {...register('note')}
                     id="note"
+                    name="note"
                     placeholder="Extra Note"
-                    value={note}
                     onChange={(e) => {
-                      setNote(e.target.value)
+                      setValue('note', e.target.value, { shouldValidate: true })
                     }}
-                    required
                   ></textarea>
                 </div>
               </div>
-  
+
               <div className="lg:flex lg:justify-between my-3">
                 <div className="grid gap-3 my-3 w-full mr-3">
                   <label htmlFor="material">Material:</label>
                   <input
                     className="p-2 w-full rounded border-2"
                     type={'text'}
+                    {...register('material')}
                     id="material"
-                    placeholder="Extra Material "
-                    value={material}
+                    name="material"
+                    placeholder="Extra Material"
                     onChange={(e) => {
-                      setMaterial(e.target.value)
+                      setValue('material', e.target.value, {
+                        shouldValidate: true,
+                      })
                     }}
-                    required
                   />
+                  {errors.material && (
+                    <span className="text-red-500">
+                      {errors.material.message}
+                    </span>
+                  )}
                 </div>
-  
+
                 <div className="grid gap-3 my-3 w-full">
-                  <label htmlFor="images">Extra Images:</label>
+                  <label htmlFor="images">Choose an image or images:</label>
                   <input
                     className="p-2  w-full rounded border-2"
                     type={'file'}
                     id="images"
-                    value={images}
+                    ref={imageRef}
                     multiple
                     required
                   />
                 </div>
               </div>
-  
-              <WideButton name="Update Extra" />
+
+              {isLoading ? (
+                <WideButton name="Updating Extra... " />
+              ) : (
+                <WideButton name="Update Extra" />
+              )}
             </form>
           </div>
         </div>
@@ -242,7 +529,11 @@ const update = () => {
     )
   }
 
-  return <><Loading /></>
+  return (
+    <>
+      <Loading />
+    </>
+  )
 }
 
 export default update

@@ -14,6 +14,7 @@ export interface IOrders {
 
 
 export interface IOrder {
+    orderId: string
     userId: string
     productId: string
     quantity: number

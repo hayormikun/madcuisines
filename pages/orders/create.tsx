@@ -69,12 +69,15 @@ const create = () => {
     item: FormInputs | IOrder,
   ) => {
     const { userId, productId, quantity, } = item
+    const products = [{
+      productId,
+      quantity: quantity.toString()
+    }]
 
     const formData = new FormData()
     formData.append('userId', userId)
-    formData.append('productId', productId)
-    formData.append('quantity', quantity.toString())
-    console.log(formData)
+    formData.append('products', JSON.stringify(products))
+
     mutate(formData)
   }
 
@@ -155,9 +158,9 @@ const create = () => {
                 </div>
   
               {isLoading ? (
-                <WideButton name="Creating Category... " />
+                <WideButton name="Creating Order... " />
               ) : (
-                <WideButton name="Create Category" />
+                <WideButton name="Create Order" />
               )}
             </form>
           </div>
