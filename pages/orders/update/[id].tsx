@@ -33,7 +33,8 @@ const fetchOrder = async (id: string | string[] | undefined) => {
       `${process.env.Base_Url}/order/get-order/${id}`,
     )
     if (res.ok) {
-      return res.json()
+      const data = await res.json()
+      return data.data
     }
     throw new Error('error fetching product with id')
   }
@@ -157,9 +158,6 @@ const update = () => {
                   type={'text'}
                   {...register('userId')}
                   id="userId"
-                  name='userId'
-        
-                  onChange={(e)=>{setValue('userId', e.target.value, { shouldValidate: true})}}
                 />
                 {errors.userId && (
                   <span className="text-red-500">{errors.userId.message}</span>
@@ -172,9 +170,7 @@ const update = () => {
                   className="p-2 rounded border-2"
                   {...register('productId')}
                   id="product"
-                  name='productId'
-             
-                  onChange={(e)=>{setValue('productId', e.target.value, { shouldValidate: true})}}
+                  
                 >
                   {products?.map((product: IProducts) => (
                     <option
@@ -197,10 +193,8 @@ const update = () => {
                     className="p-2 rounded border-2 h-fit"
                     type={'number'}
                     {...register('quantity')}
-                    name="quantity"
                     id="quantity"
                     placeholder="Quantity"
-                    onChange={(e)=>{setValue('quantity', e.target.valueAsNumber, { shouldValidate: true })}}
                   />
                   {errors.quantity && (
                     <span className="text-red-500">

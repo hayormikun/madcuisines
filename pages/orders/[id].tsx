@@ -45,9 +45,6 @@ const Details = () => {
     },
   )
 
-  // const createdAt = new Date(order?.dateCreated)
-  // const date = format(createdAt, 'dd/mm/yyyy')
-
   if (isLoading) {
     return (
       <>
@@ -71,7 +68,16 @@ const Details = () => {
       })
   }
 
-  if (status === 'authenticated') {
+  if (status === 'authenticated' && order ) {
+    const dateOrdered = new Date(order.orderDate)
+    const orderDate = format(dateOrdered, 'dd-MM-yyyy')
+
+    const expectedDate = new Date(order.dueDate)
+    const dueDate = format(expectedDate, 'dd-MM-yyyy')
+
+    const userDate = new Date(order.user.dateCreated)
+    const userCreated = format(userDate, 'dd-MM-yyyy')
+
     return (
       <main className="lg:flex pt-20">
         <Sidebar
@@ -95,7 +101,7 @@ const Details = () => {
                 <a
                   className="mr-2"
                   onClick={() => {
-                    handleDelete(order.data.orderId)
+                    handleDelete(order.orderId)
                   }}
                 >
                   <DelButton name="delete" />
@@ -112,8 +118,8 @@ const Details = () => {
                     <li>Order Number: {order.orderNumber}</li>
                     <li>Status: {order.status}</li>
                     <li>Total Amount: {order.totalAmount}</li>
-                    <li>Order Date: {order.orderDate}</li>
-                    <li>Due Date: {order.dueDate}</li>
+                    <li>Order Date: {orderDate}</li>
+                    <li>Due Date: {dueDate}</li>
                   </ul>
                 </div>
                 <div className="flex flex-col justify-left">
@@ -127,7 +133,7 @@ const Details = () => {
                     <li>Last Name: {order.user.lastName}</li>
                     <li>Email: {order.user.email}</li>
                     <li>Phone: {order.user.phoneNumber}</li>
-                    <li>Date Created: {order.user.dateCreated}</li>
+                    <li>Date Created: {userCreated}</li>
                   </ul>
                 </div>
                 {order.details?.map((details: any) => (

@@ -25,11 +25,10 @@ const fetchExtra = async (id: string | string[] | undefined) => {
 
 const Details = () => {
   const { status, data } = useSession()
-  
+
   const router = useRouter()
-  useEffect(()=>{
-    if (status === 'unauthenticated')
-    router.replace('/auth/login')
+  useEffect(() => {
+    if (status === 'unauthenticated') router.replace('/auth/login')
   }, [status])
 
   const {
@@ -47,11 +46,12 @@ const Details = () => {
     },
   )
 
-  // const createdAt = new Date(extra.dateCreated)
-  // const date = format(createdAt, 'dd/mm/yyyy')
-
   if (isLoading) {
-    return <><Loading /></>
+    return (
+      <>
+        <Loading />
+      </>
+    )
   }
 
   if (isError) {
@@ -69,7 +69,10 @@ const Details = () => {
       })
   }
 
-  if (status === 'authenticated') {
+  if (status === 'authenticated' && extra) {
+    const date = new Date(extra.dateCreated)
+    const dateCreated = format(date, 'dd-MM-yyyy')
+
     return (
       <main className="lg:flex pt-20">
         <Sidebar
@@ -80,7 +83,7 @@ const Details = () => {
         />
         <div className="mt-5 w-full lg:w-10/12">
           <Heading heading="Extras" />
-  
+
           {extra && (
             <div className="w-10/12 mx-auto">
               <div className="flex flex-col md:grid grid-cols-3 shadow-md">
@@ -129,21 +132,29 @@ const Details = () => {
                     </li>
                     <li className="mb-3">
                       Discount Price:{' '}
-                      <span className="text-gray-600">${extra?.falsePrice}</span>
+                      <span className="text-gray-600">
+                        ${extra?.falsePrice}
+                      </span>
                     </li>
-                    {/* <li className="mb-3">
-                      Date Created: <span className="text-gray-600">{date}</span>
-                    </li> */}
+                    <li className="mb-3">
+                      Date Created:{' '}
+                      <span className="text-gray-600">{dateCreated}</span>
+                    </li>
                   </ul>
-  
+
                   <div className="flex justify-start items-center my-3">
                     <Link href={`/extras/update/${id}`}>
                       <a className="mr-2">
                         <EditButton name="edit" />
                       </a>
                     </Link>
-  
-                    <a className="mr-2" onClick={()=>{handleDelete(extra.extraId)}}>
+
+                    <a
+                      className="mr-2"
+                      onClick={() => {
+                        handleDelete(extra.extraId)
+                      }}
+                    >
                       <DelButton name="delete" />
                     </a>
                   </div>
@@ -156,7 +167,11 @@ const Details = () => {
     )
   }
 
-  return <><Loading /></>
+  return (
+    <>
+      <Loading />
+    </>
+  )
 }
 
 export default Details

@@ -61,7 +61,10 @@ const create = () => {
       description
     } = item
 
+    console.log(name, description)
     const formData = new FormData()
+    formData.append('name', name)
+    formData.append('description', description)
 
     mutate(formData)
   }

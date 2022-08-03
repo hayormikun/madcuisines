@@ -93,7 +93,9 @@ const update = () => {
     FormData
   >(updateItem)
 
-  const onSubmit: SubmitHandler<ICategory> = (item: ICategory) => {
+  const onSubmit: SubmitHandler< ICategory> = (
+    item: ICategory,
+  ) => {
     const { name, description } = item
 
     console.log(nameRef.current.value)
@@ -136,13 +138,10 @@ const update = () => {
                   {...register('name')}
                   ref={nameRef}
                   id="name"
-                  defaultValue={category.data.name}
-                  placeholder={category.data.name}
+                  defaultValue={category?.data.name}
+                  placeholder={category?.data.name}
+                  required
                 />
-
-                {errors.name && (
-                  <span className="text-red-500">{errors.name.message}</span>
-                )}
               </div>
 
               <div className="grid gap-3 w-full my-5">
@@ -152,16 +151,10 @@ const update = () => {
                   {...register('description')}
                   ref={descRef}
                   id="description"
-                  defaultValue={category.data.description}
-                  placeholder={category.data.description}
+                  defaultValue={category?.data.description}
+                  placeholder={category?.data.description}
                   required
                 ></textarea>
-
-                {errors.description && (
-                  <span className="text-red-500">
-                    {errors.description.message}
-                  </span>
-                )}
               </div>
 
               {isLoading ? (
