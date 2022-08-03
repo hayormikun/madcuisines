@@ -64,14 +64,14 @@ const Details = () => {
     return alert(error)
   }
 
-  const handleDelete = async () => {
+  const handleDelete = async (id: string) => {
     await axios
-      .post(`${process.env.Base_Url}/product/delete-product/${id}`)
+      .post(`${process.env.Base_Url}/product/delete-product/`, id)
       .then(() => {
-        router.push('/products/index')
+        router.push('/products/')
       })
       .catch(() => {
-        throw new Error('unable to delete')
+        alert('unable to delete extra')
       })
   }
 
@@ -152,7 +152,7 @@ const Details = () => {
                       </a>
                     </Link>
   
-                    <a className="mr-2" onClick={handleDelete}>
+                    <a className="mr-2" onClick={()=>{handleDelete(product.productId)}}>
                       <DelButton name="delete" />
                     </a>
                   </div>

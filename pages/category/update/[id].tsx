@@ -15,12 +15,15 @@ import { ICategories, ICategory } from '../../../libs/interfaces/ICategory'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
 import { useRouter } from 'next/router'
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useSession } from 'next-auth/react'
 import { Loading } from '../../../components/Loading'
 
 const updateItem = async (item: FormData): Promise<FormData> => {
-  return await axios.post(`${process.env.Base_Url}/category/update-category`, item)
+  return await axios.post(
+    `${process.env.Base_Url}/category/update-category`,
+    item,
+  )
 }
 
 const fetchCategory = async (id: string | string[] | undefined) => {
@@ -49,26 +52,17 @@ export async function getServerSideProps() {
   }
 }
 
-const schema = yup.object().shape({
-  name: yup.string().required().max(30),
-  description: yup.string().required().max(200),
-})
-
-type FormInputs = yup.InferType<typeof schema>
-
 const update = () => {
   const { status, data } = useSession()
-  
+
   const router = useRouter()
-  useEffect(()=>{
-    if (status === 'unauthenticated')
-    router.replace('/auth/login')
+  useEffect(() => {
+    if (status === 'unauthenticated') router.replace('/auth/login')
   }, [status])
 
   const {
     query: { id },
   } = useRouter()
-
 
   const { data: category } = useQuery(
     ['category', id],
@@ -78,18 +72,14 @@ const update = () => {
     },
   )
 
+  const nameRef = useRef(category?.data.name)
+  const descRef = useRef(category?.data.description)
+
   const {
     register,
     handleSubmit,
-    setValue,
     formState: { errors },
-  } = useForm<ICategory>({
-    resolver: yupResolver(schema),
-    defaultValues: {
-      name: category.name,
-      description: category.description
-    }
-  })
+  } = useForm<ICategory>({})
 
   const {
     mutate,
@@ -104,19 +94,20 @@ const update = () => {
   >(updateItem)
 
   const onSubmit: SubmitHandler<ICategory> = (item: ICategory) => {
-    const {
-      name,
-      description
-    } = item
+    const { name, description } = item
 
-    const formData =  new FormData()
-    formData.append('name', name)
-    formData.append('description', description)
+    console.log(nameRef.current.value)
+    console.log(descRef.current.value)
+
+    const formData = new FormData()
+    formData.append('categoryId', category.data.categoryId)
+    formData.append('name', nameRef.current.value)
+    formData.append('description', descRef.current.value)
 
     mutate(formData)
   }
 
-  if (status === "authenticated"){
+  if (status === 'authenticated' && category) {
     return (
       <main className="lg:flex pt-20">
         <Sidebar
@@ -127,7 +118,7 @@ const update = () => {
         />
         <div className="mt-5 w-full lg:w-10/12">
           <Heading heading="Update Category" />
-  
+
           <div className="grid">
             {isError
               ? `Error encountered while updating Category: ${error.message}`
@@ -143,25 +134,27 @@ const update = () => {
                   className="p-2 w-full rounded border-2"
                   type={'text'}
                   {...register('name')}
+                  ref={nameRef}
                   id="name"
-                  name="name"
-                  placeholder="Category Name"
-                  onChange={(e)=>{setValue('name', e.target.value, { shouldValidate: true })}}
+                  defaultValue={category.data.name}
+                  placeholder={category.data.name}
                 />
+
                 {errors.name && (
                   <span className="text-red-500">{errors.name.message}</span>
                 )}
               </div>
-  
+
               <div className="grid gap-3 w-full my-5">
                 <label htmlFor="description">Category Description:</label>
                 <textarea
                   className="p-3  w-full rounded border-2"
                   {...register('description')}
+                  ref={descRef}
                   id="description"
-                  name="description"
-                  placeholder="Product description"
-                  onChange={(e)=>{setValue('description', e.target.value, { shouldValidate: true })}}
+                  defaultValue={category.data.description}
+                  placeholder={category.data.description}
+                  required
                 ></textarea>
 
                 {errors.description && (
@@ -170,7 +163,7 @@ const update = () => {
                   </span>
                 )}
               </div>
-  
+
               {isLoading ? (
                 <WideButton name="Updating Category... " />
               ) : (
@@ -183,7 +176,11 @@ const update = () => {
     )
   }
 
-  return <><Loading /></>
+  return (
+    <>
+      <Loading />
+    </>
+  )
 }
 
 export default update

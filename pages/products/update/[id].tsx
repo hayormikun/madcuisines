@@ -20,6 +20,7 @@ import { ErrorPrompt } from '../../../components/ErrorPrompt'
 import { useRouter } from 'next/router'
 import { useSession } from 'next-auth/react'
 import { Loading } from '../../../components/Loading'
+import Image from 'next/image'
 
 
 const updateItem = async (item: FormData): Promise<FormData> => {
@@ -45,10 +46,7 @@ const fetchProduct = async (id: string | string[] | undefined) => {
 export async function getServerSideProps() {
   const queryClient = new QueryClient()
 
-  await queryClient.prefetchQuery<IProducts, ICategories>([
-    'product',
-    'categories',
-  ])
+  await queryClient.prefetchQuery<IProducts, ICategories>('product')
 
   return {
     props: {
@@ -120,7 +118,7 @@ const update = () => {
 
   const { data: categories } = useQuery('categories', getCategories)
 
-  const imageRef = useRef<HTMLInputElement>(product.images)
+  const imageRef = useRef<HTMLInputElement>(null)
 
   const {
     register,
@@ -233,7 +231,7 @@ const update = () => {
                   {...register('name')}
                   name="name"
                   id="name"
-                  placeholder={product?.name}
+                  placeholder="Product name"
                   onChange={(e) => {
                     setValue('name', e.target.value, { shouldValidate: true })
                   }}
@@ -247,7 +245,7 @@ const update = () => {
                     className="p-2 rounded border-2"
                     {...register('categoryId')}
                     id="category"
-                    name="categotyId"
+                    name="categoryId"
                     placeholder="Select Category"
                     onChange={(e) => {
                       setValue('categoryId', e.target.value, {
@@ -428,9 +426,16 @@ const update = () => {
                     className="p-2  w-full rounded border-2"
                     type={'file'}
                     id="images"
+                    defaultValue={product.images}
                     ref={imageRef}
                     multiple
                   />
+                  {product.images.map((image: any)=>{
+                    <div className="grid grid-cols-2">
+                      <Image src={`${process.env.Base_Url}/${image.imageUrl}`} alt={product.name} width={300} height={300} />
+                    </div>
+                  })}
+                  
                 </div>
               </div>
   

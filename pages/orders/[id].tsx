@@ -24,13 +24,11 @@ const fetchOrder = async (id: string | string[] | undefined) => {
 }
 
 const Details = () => {
-
   const { status, data } = useSession()
-  
+
   const router = useRouter()
-  useEffect(()=>{
-    if (status === 'unauthenticated')
-    router.replace('/auth/login')
+  useEffect(() => {
+    if (status === 'unauthenticated') router.replace('/auth/login')
   }, [status])
 
   const queryCahce = new QueryCache()
@@ -51,25 +49,29 @@ const Details = () => {
   // const date = format(createdAt, 'dd/mm/yyyy')
 
   if (isLoading) {
-    return <><Loading /></>
+    return (
+      <>
+        <Loading />
+      </>
+    )
   }
 
   if (isError) {
     return alert(error)
   }
 
-  const handleDelete = async () => {
+  const handleDelete = async (id: string) => {
     await axios
-      .post(`${process.env.Base_Url}/order/delete-order/${id}`)
+      .post(`${process.env.Base_Url}/order/delete-order/`, id)
       .then(() => {
-        router.push('/orders/index')
+        router.push('/orders/')
       })
       .catch(() => {
-        throw new Error('unable to delete')
+        alert('unable to delete')
       })
   }
 
-  if (status === 'authenticated'){
+  if (status === 'authenticated') {
     return (
       <main className="lg:flex pt-20">
         <Sidebar
@@ -80,9 +82,25 @@ const Details = () => {
         />
         <div className="mt-5 w-full lg:w-10/12">
           <Heading heading="Order Details" />
-  
+
           {order && (
             <div className="w-11/12 p-7 bg-gray-200 rounded-md mx-auto">
+              <div className="flex w-full my-3 mr-5 justify-end items-center gap-x-2">
+                <Link href={`/orders/update/${id}`}>
+                  <a className="mr-2">
+                    <EditButton name="edit" />
+                  </a>
+                </Link>
+
+                <a
+                  className="mr-2"
+                  onClick={() => {
+                    handleDelete(order.data.orderId)
+                  }}
+                >
+                  <DelButton name="delete" />
+                </a>
+              </div>
               <div className="grid grid-cols-2 gap-10">
                 <div className="flex flex-col justify-left">
                   <h2 className="text-md my-3 font-semibold text-gray-500">
@@ -113,13 +131,12 @@ const Details = () => {
                   </ul>
                 </div>
                 {order.details?.map((details: any) => (
-                  
                   <div className="flex flex-col justify-left">
-                      <>{console.log(details.product?.name)}</>
+                    <>{console.log(details.product?.name)}</>
                     <h2 className="text-md my-3 font-semibold text-gray-500">
                       Order Details
                     </h2>
-  
+
                     <ul className="space-y-3 text-md font-medium text-gray-400">
                       <li>Order Details Id: {details.orderDetailsId}</li>
                       <li>Order Id: {details.orderId}</li>
@@ -165,7 +182,11 @@ const Details = () => {
     )
   }
 
-  return <><Loading /></>
+  return (
+    <>
+      <Loading />
+    </>
+  )
 }
 
 export default Details

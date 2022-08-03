@@ -47,8 +47,8 @@ const Details = () => {
     },
   )
 
-  const createdAt = new Date(extra.dateCreated)
-  const date = format(createdAt, 'dd/mm/yyyy')
+  // const createdAt = new Date(extra.dateCreated)
+  // const date = format(createdAt, 'dd/mm/yyyy')
 
   if (isLoading) {
     return <><Loading /></>
@@ -58,14 +58,14 @@ const Details = () => {
     return alert(error)
   }
 
-  const handleDelete = async () => {
+  const handleDelete = async (id: string) => {
     await axios
-      .post(`${process.env.Base_Url}/extra/delete-extra/${id}`)
+      .post(`${process.env.Base_Url}/extra/delete-extra/`, id)
       .then(() => {
-        router.push('/extras/index')
+        router.push('/extras/')
       })
       .catch(() => {
-        throw new Error('unable to delete')
+        alert('unable to delete extra')
       })
   }
 
@@ -131,19 +131,19 @@ const Details = () => {
                       Discount Price:{' '}
                       <span className="text-gray-600">${extra?.falsePrice}</span>
                     </li>
-                    <li className="mb-3">
+                    {/* <li className="mb-3">
                       Date Created: <span className="text-gray-600">{date}</span>
-                    </li>
+                    </li> */}
                   </ul>
   
                   <div className="flex justify-start items-center my-3">
-                    <Link href={`/products/update/${id}`}>
+                    <Link href={`/extras/update/${id}`}>
                       <a className="mr-2">
                         <EditButton name="edit" />
                       </a>
                     </Link>
   
-                    <a className="mr-2" onClick={handleDelete}>
+                    <a className="mr-2" onClick={()=>{handleDelete(extra.extraId)}}>
                       <DelButton name="delete" />
                     </a>
                   </div>

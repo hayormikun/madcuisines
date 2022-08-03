@@ -113,7 +113,7 @@ const update = () => {
     enabled: !!id,
   })
 
-  const imageRef = useRef<HTMLInputElement>(extra.images)
+  const imageRef = useRef<HTMLInputElement>(null)
 
   const {
     register,

@@ -111,8 +111,8 @@ const update = () => {
 
   const { data: products } = useQuery('products', getProducts)
 
-  const onSubmit: SubmitHandler<IOrder> = (
-    item: IOrder,
+  const onSubmit: SubmitHandler< FormInputs | IOrder> = (
+    item: FormInputs | IOrder,
   ) => {
     const { userId, productId, quantity, } = item
     const products = [{
@@ -158,7 +158,7 @@ const update = () => {
                   {...register('userId')}
                   id="userId"
                   name='userId'
-                  placeholder="User Id"
+        
                   onChange={(e)=>{setValue('userId', e.target.value, { shouldValidate: true})}}
                 />
                 {errors.userId && (
@@ -173,7 +173,7 @@ const update = () => {
                   {...register('productId')}
                   id="product"
                   name='productId'
-                  placeholder="Select product"
+             
                   onChange={(e)=>{setValue('productId', e.target.value, { shouldValidate: true})}}
                 >
                   {products?.map((product: IProducts) => (

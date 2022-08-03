@@ -2,6 +2,7 @@ import { PencilAltIcon, TrashIcon } from '@heroicons/react/outline'
 import axios from 'axios'
 import { useSession } from 'next-auth/react'
 import { redirect } from 'next/dist/server/api-utils'
+import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useEffect } from 'react'
 import { dehydrate, QueryClient, useMutation, useQuery } from 'react-query'
@@ -40,13 +41,17 @@ const category = () => {
   const {data: categories, isLoading, isError, error, refetch} = useQuery('categories', getCategories)
 
 
-  const deleteCategory = async(id: string)=>{
-    return await axios.post(`${process.env.Base_Url}/category/delete-category/${id}`).then(()=>{
-     refetch
-    })
-  }
-  
-  const {mutate} = useMutation(deleteCategory) 
+  const handleDelete = async (id: string) => {
+    await axios
+      .post(`${process.env.Base_Url}/category/delete-category/`, id)
+      .then(() => {
+        alert('deleted')
+        refetch()
+      })
+      .catch(() => {
+        alert('unable to delete extra')
+      })
+  } 
 
   if (isLoading) {
     return <><Loading /></>
@@ -89,14 +94,20 @@ const category = () => {
                   </span>
                 </td>
                 <td>
-                  <span className="p-3 flex">
+                  <span className="p-3 flex item-center">
+                    <Link href={`/category/update/${category.categoryId}`}>
+                    <a className='flex items-center'>
                     Edit <PencilAltIcon className="ml-2 w-5" />
+                    </a>
+                    </Link>
                   </span>{' '}
                 </td>
                 <td>
-                  <span className="p-3 flex">
-                    Delete <TrashIcon className="ml-2 w-5" />
-                  </span>
+                  <a className='hover:cursor-pointer' onClick={()=>{handleDelete(category.categoryId)}}>
+                    <span className="p-3 flex" >
+                      Delete <TrashIcon className="ml-2 w-5" />
+                    </span>
+                  </a>
                 </td>
               </tr>
               ))}
