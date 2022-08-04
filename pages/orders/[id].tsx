@@ -68,7 +68,7 @@ const Details = () => {
       })
   }
 
-  if (status === 'authenticated' && order ) {
+  if (status === 'authenticated' && order) {
     const dateOrdered = new Date(order.orderDate)
     const orderDate = format(dateOrdered, 'dd-MM-yyyy')
 
@@ -77,6 +77,28 @@ const Details = () => {
 
     const userDate = new Date(order.user.dateCreated)
     const userCreated = format(userDate, 'dd-MM-yyyy')
+
+    order.deliveries?.forEach((delivery: any) => {
+      let dateReceived = null
+      let receivedDate = null
+
+      let dateDispatched = null
+      let dispatchedDate = null
+
+      dateReceived = new Date(delivery.receivedDate)
+
+      receivedDate = format(dateReceived, 'dd-MM-yyyy')
+
+      delivery.receivedDate = receivedDate
+
+      dateDispatched = new Date(delivery.dispatchedDate)
+
+      dispatchedDate = format(dateReceived, 'dd-MM-yyyy')
+
+      delivery.dispatchedDate = dispatchedDate
+
+      console.log(delivery.dispatchedDate, delivery.receivedDate)
+    })
 
     return (
       <main className="lg:flex pt-20">
@@ -158,25 +180,25 @@ const Details = () => {
                     </ul>
                   </div>
                 ))}
-                {order.deliveries?.map((deliveries: any) => (
+                {order.deliveries?.map((delivery: any) => (
                   <div className="flex flex-col justify-left">
                     <h2 className="text-md my-3 font-semibold text-gray-500">
                       Delivery Information
                     </h2>
                     <ul className="space-y-3 text-md font-medium text-gray-400">
-                      <li>Delivery Id: {deliveries.deliveryId}</li>
-                      <li>Order Id: {deliveries.orderId}</li>
-                      <li>Order Tracking Id: {deliveries.orderTrackingId}</li>
-                      <li>Dispatcher: {deliveries.dispatcher}</li>
-                      <li>Amount: {deliveries.amount}</li>
-                      <li>Priority: {deliveries.priority}</li>
-                      <li>Receiver: {deliveries.receiver}</li>
-                      <li>Status: {deliveries.status}</li>
-                      <li>Receiver Phone: {deliveries.receiverPhone}</li>
-                      <li>Received Date: {deliveries.receivedDated}</li>
-                      <li>Disptached Date: {deliveries.dispatchedDate}</li>
-                      <li>Rating: {deliveries.rating}</li>
-                      <li>Note: {deliveries.note}</li>
+                      <li>Delivery Id: {delivery.deliveryId}</li>
+                      <li>Order Id: {delivery.orderId}</li>
+                      <li>Order Tracking Id: {delivery.orderTrackingId}</li>
+                      <li>Dispatcher: {delivery.dispatcher}</li>
+                      <li>Amount: {delivery.amount}</li>
+                      <li>Priority: {delivery.priority}</li>
+                      <li>Receiver: {delivery.receiver}</li>
+                      <li>Status: {delivery.status}</li>
+                      <li>Receiver Phone: {delivery.receiverPhone}</li>
+                      <li>Dispatched Date: {delivery.dispatchedDate}</li>
+                      <li>Received Date: {delivery.receivedDate}</li>
+                      <li>Rating: {delivery.rating}</li>
+                      <li>Note: {delivery.note}</li>
                     </ul>
                   </div>
                 ))}
