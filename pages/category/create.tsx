@@ -15,24 +15,26 @@ import { useRouter } from 'next/router'
 import { useSession } from 'next-auth/react'
 import { Loading } from '../../components/Loading'
 
-const createItem = async (item: FormData): Promise<FormData> => {
+const createItem = async (item: ICategory): Promise<ICategory> => {
   return await axios.post(`${process.env.Base_Url}/category/create`, item)
 }
 
 const schema = yup.object().shape({
-  name: yup.string().required().max(30),
-  description: yup.string().required().max(200),
+  name: yup.string().required('Enter category name').max(30),
+  description: yup
+    .string()
+    .required('Category description is required')
+    .max(200),
 })
 
 type FormInputs = yup.InferType<typeof schema>
 
 const create = () => {
   const { status, data } = useSession()
-  
+
   const router = useRouter()
-  useEffect(()=>{
-    if (status === 'unauthenticated')
-    router.replace('/auth/login')
+  useEffect(() => {
+    if (status === 'unauthenticated') router.replace('/auth/login')
   }, [status])
 
   const {
@@ -49,24 +51,14 @@ const create = () => {
     isError,
     error,
     isSuccess,
-  }: UseMutationResult<FormData, Error, FormData> = useMutation<
-    FormData,
+  }: UseMutationResult<ICategory, Error, ICategory> = useMutation<
+    ICategory,
     Error,
-    FormData
+    ICategory
   >(createItem)
 
-  const onSubmit: SubmitHandler<FormInputs | ICategory > = (item: FormInputs | ICategory) => { 
-    const {
-      name,
-      description
-    } = item
-
-    console.log(name, description)
-    const formData = new FormData()
-    formData.append('name', name)
-    formData.append('description', description)
-
-    mutate(formData)
+  const onSubmit: SubmitHandler<ICategory> = (item: ICategory) => {
+    mutate(item)
   }
 
   if (status === 'authenticated') {
@@ -80,9 +72,9 @@ const create = () => {
         />
         <div className="mt-5 w-full lg:w-10/12">
           <Heading heading="Create Category" />
-  
+
           <div className="grid">
-          {isError ? (
+            {isError ? (
               <ErrorPrompt item="category" msg={error.message.toLowerCase()} />
             ) : (
               ''
@@ -105,7 +97,7 @@ const create = () => {
                   <span className="text-red-500">{errors.name.message}</span>
                 )}
               </div>
-  
+
               <div className="grid gap-3 w-full my-5">
                 <label htmlFor="description">Category Description:</label>
                 <textarea
@@ -120,7 +112,7 @@ const create = () => {
                   </span>
                 )}
               </div>
-  
+
               {isLoading ? (
                 <WideButton name="Creating Category... " />
               ) : (
@@ -132,7 +124,11 @@ const create = () => {
       </main>
     )
   }
-  return <><Loading /></>
+  return (
+    <>
+      <Loading />
+    </>
+  )
 }
 
 export default create

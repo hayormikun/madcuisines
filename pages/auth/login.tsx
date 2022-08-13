@@ -46,7 +46,7 @@ const login = () => {
     
 
    const res = await signIn('credentials', {
-      user,
+      admin: user,
       password,
       redirect: false
     })
@@ -75,12 +75,12 @@ const login = () => {
             >
               <input
                 className="w-full border-2 rounded bg-gray-100 font-semibold py-4 px-3 shadow-sm"
-                type={'email'}
+                type={'text'}
                 {...register('user')}
               />
               <div className={`${show} top-4 right-2`}>
                 <span className="flex text-gray-400 text-sm">
-                  Email <MailIcon className="ml-1 w-5" />
+                  User <MailIcon className="ml-1 w-5" />
                 </span>
               </div>
             </div>

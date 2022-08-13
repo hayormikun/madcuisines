@@ -32,9 +32,10 @@ const fetchCategory = async (id: string | string[] | undefined) => {
       `${process.env.Base_Url}/category/get-category/${id}`,
     )
     if (res.ok) {
-      return res.json()
+      const data = await res.json()
+      return data.data
     }
-    throw new Error('error fetching product with id')
+    throw new Error('error fetching category with id')
   }
 
   throw new Error('invalid id')
@@ -72,14 +73,21 @@ const update = () => {
     },
   )
 
-  const nameRef = useRef(category?.data.name)
-  const descRef = useRef(category?.data.description)
+  const nameRef = useRef(category?.name)
+  const descRef = useRef(category?.description)
 
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<ICategory>({})
+  } = useForm<ICategories>({
+    shouldUseNativeValidation: true,
+
+    defaultValues: {
+      name: category?.name,
+      description: category?.description,
+    },
+  })
 
   const {
     mutate,
@@ -93,18 +101,15 @@ const update = () => {
     FormData
   >(updateItem)
 
-  const onSubmit: SubmitHandler< ICategory> = (
-    item: ICategory,
-  ) => {
-    const { name, description } = item
-
-    console.log(nameRef.current.value)
-    console.log(descRef.current.value)
-
+  const onSubmit: SubmitHandler<ICategory> = (item: ICategory) => {
     const formData = new FormData()
-    formData.append('categoryId', category.data.categoryId)
+    formData.append('categoryId', category.categoryId)
     formData.append('name', nameRef.current.value)
     formData.append('description', descRef.current.value)
+
+    formData.forEach((key) => {
+      console.log(key)
+    })
 
     mutate(formData)
   }
@@ -131,6 +136,18 @@ const update = () => {
               className="text-gray-700 font-semibold mx-auto w-6/12"
             >
               <div className="grid gap-3 w-full my-5">
+                <label htmlFor="name">Category Id:</label>
+                <input
+                  className="p-2 w-full rounded border-2"
+                  type={'text'}
+                  {...register('categoryId')}
+                  value={category.categoryId}
+                  placeholder={category.name}
+                  disabled
+                />
+              </div>
+
+              <div className="grid gap-3 w-full my-5">
                 <label htmlFor="name">Category Name:</label>
                 <input
                   className="p-2 w-full rounded border-2"
@@ -138,8 +155,9 @@ const update = () => {
                   {...register('name')}
                   ref={nameRef}
                   id="name"
-                  defaultValue={category?.data.name}
-                  placeholder={category?.data.name}
+                  name='name'
+                  // defaultValue={category.name}
+                  placeholder={category.name}
                   required
                 />
               </div>
@@ -151,8 +169,9 @@ const update = () => {
                   {...register('description')}
                   ref={descRef}
                   id="description"
-                  defaultValue={category?.data.description}
-                  placeholder={category?.data.description}
+                  name='description'
+                  // defaultValue={category.description}
+                  placeholder={category.description}
                   required
                 ></textarea>
               </div>

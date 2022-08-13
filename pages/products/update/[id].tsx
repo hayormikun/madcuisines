@@ -14,7 +14,7 @@ import { IProduct, IProducts } from '../../../libs/interfaces/IProducts'
 import { ICategories } from '../../../libs/interfaces/ICategory'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
-import { useEffect, useRef } from 'react'
+import { HtmlHTMLAttributes, useEffect, useRef } from 'react'
 import { Success } from '../../../components/Success'
 import { ErrorPrompt } from '../../../components/ErrorPrompt'
 import { useRouter } from 'next/router'
@@ -22,16 +22,16 @@ import { useSession } from 'next-auth/react'
 import { Loading } from '../../../components/Loading'
 import Image from 'next/image'
 
-
 const updateItem = async (item: FormData): Promise<FormData> => {
-  return await axios.post(`${process.env.Base_Url}/product/update-product`, item)
+  return await axios.post(
+    `${process.env.Base_Url}/product/update-product`,
+    item,
+  )
 }
 
 const fetchProduct = async (id: string | string[] | undefined) => {
   if (typeof id === 'string') {
-    const res = await fetch(
-      `${process.env.Base_Url}/product/get-product/${id}`,
-    )
+    const res = await fetch(`${process.env.Base_Url}/product/get-product/${id}`)
     if (res.ok) {
       const data = await res.json()
       return data.data
@@ -41,7 +41,6 @@ const fetchProduct = async (id: string | string[] | undefined) => {
 
   throw new Error('invalid id')
 }
-
 
 export async function getServerSideProps() {
   const queryClient = new QueryClient()
@@ -61,50 +60,12 @@ const getCategories = async () => {
   return data.data
 }
 
-
-const schema = yup.object().shape({
-  name: yup.string().required().max(30),
-  categoryId: yup.string().required('Select a category'),
-  material: yup.string().required('Product material is required').max(30),
-  description: yup
-    .string()
-    .required('Product description is required')
-    .max(200),
-  note: yup.string().required('Product note is required').max(150),
-  unitOfMeasurement: yup
-    .string()
-    .required('Unit of measurement is required')
-    .max(20),
-  quantityAvailable: yup
-    .number()
-    .positive('Quantity must be greater than zero')
-    .integer('Quantity must be a whole number')
-    .required('Available Quantity is required'),
-  unitPrice: yup
-    .number()
-    .positive('Price must be greater than zero')
-    .required('Product price is required'),
-  unitSale: yup
-    .number()
-    .positive('Unit sale must be greater than zero')
-    .required('Unit sale is required'),
-  falsePrice: yup.number().required('Discount price is required'),
-  minOrder: yup
-    .number()
-    .positive('Order must be greater than zero')
-    .integer('Quantity must be a whole number')
-    .required('Minimum order is required'),
-})
-
-type FormInputs = yup.InferType<typeof schema>
-
 const update = () => {
   const { status, data } = useSession()
-  
+
   const router = useRouter()
-  useEffect(()=>{
-    if (status === 'unauthenticated')
-    router.replace('/auth/login')
+  useEffect(() => {
+    if (status === 'unauthenticated') router.replace('/auth/login')
   }, [status])
 
   const {
@@ -115,18 +76,14 @@ const update = () => {
     enabled: !!id,
   })
 
-
   const { data: categories } = useQuery('categories', getCategories)
-
-  const imageRef = useRef<HTMLInputElement>(null)
 
   const {
     register,
     handleSubmit,
-    setValue,
     formState: { errors },
   } = useForm<IProduct>({
-    resolver: yupResolver(schema),
+  
     shouldUseNativeValidation: true,
 
     defaultValues: {
@@ -144,6 +101,19 @@ const update = () => {
     },
   })
 
+  const nameRef = useRef<HTMLInputElement>(product?.name)
+  const descRef = useRef<HTMLTextAreaElement>(product?.description)
+  const catIdRef = useRef<HTMLSelectElement>(product?.categoryId)
+  const uomRef = useRef<HTMLInputElement>(product?.unitOfMeasurement)
+  const quantityRef = useRef<HTMLInputElement>(product?.quantityAvailable)
+  const priceRef = useRef<HTMLInputElement>(product?.unitPrice)
+  const saleRef = useRef<HTMLInputElement>(product?.saleRef)
+  const materialRef = useRef<HTMLInputElement>(product?.material)
+  const noteRef = useRef<HTMLTextAreaElement>(product?.note)
+  const fPriceRef = useRef<HTMLInputElement>(product?.falsePrice)
+  const minOrderRef = useRef<HTMLInputElement>(product?.minOrder)
+  const imageRef = useRef<HTMLInputElement>(null)
+
   const {
     mutate,
     isLoading,
@@ -158,32 +128,36 @@ const update = () => {
 
   console.log(product)
 
-  const onSubmit: SubmitHandler<FormInputs | IProduct> = (item: FormInputs | IProduct) => {
-    const {
-      name,
-      description,
-      categoryId,
-      unitOfMeasurement,
-      quantityAvailable,
-      unitPrice,
-      unitSale,
-      material,
-      note,
-      falsePrice,
-      minOrder,
-    } = item
+  const onSubmit: SubmitHandler<IProduct> = (
+    item: IProduct,
+  ) => {
+    // const {
+    //   name,
+    //   description,
+    //   categoryId,
+    //   unitOfMeasurement,
+    //   quantityAvailable,
+    //   unitPrice,
+    //   unitSale,
+    //   material,
+    //   note,
+    //   falsePrice,
+    //   minOrder,
+    // } = item
+
+    console.log(nameRef.current.value, descRef.current.value, catIdRef.current.value )
     const formData = new FormData()
-    formData.append('name', name)
-    formData.append('description', description)
-    formData.append('categoryId', categoryId)
-    formData.append('unitOfMeasurement', unitOfMeasurement)
-    formData.append('quantityAvailable', quantityAvailable.toString())
-    formData.append('unitPrice', unitPrice.toString())
-    formData.append('unitSale', unitSale.toString())
-    formData.append('material', material)
-    formData.append('note', note)
-    formData.append('falsePrice', falsePrice.toString())
-    formData.append('minOrder', minOrder.toString())
+    formData.append('name', nameRef.current.value)
+    formData.append('description', descRef.current.value)
+    formData.append('categoryId', catIdRef.current.value)
+    formData.append('unitOfMeasurement', uomRef.current.value)
+    formData.append('quantityAvailable', quantityRef.current.value)
+    formData.append('unitPrice', priceRef.current.value)
+    formData.append('unitSale', saleRef.current.value)
+    formData.append('material', materialRef.current.value)
+    formData.append('note', noteRef.current.value)
+    formData.append('falsePrice', fPriceRef.current.value)
+    formData.append('minOrder', minOrderRef.current.value)
 
     if (imageRef.current?.files != undefined) {
       const imgLen = imageRef.current.files.length
@@ -199,7 +173,7 @@ const update = () => {
     mutate(formData)
   }
 
-  if (status === "authenticated"){
+  if (status === 'authenticated' && product) {
     return (
       <main className="lg:flex pt-20">
         <Sidebar
@@ -208,10 +182,10 @@ const update = () => {
           viewLink="/products"
           createLink="/products/create"
         />
-  
+
         <div className="mt-5 w-full lg:w-10/12">
           <Heading heading={'Update product'} />
-  
+
           <div className="grid">
             {isError ? (
               <ErrorPrompt item="product" msg={error.message.toLowerCase()} />
@@ -231,13 +205,11 @@ const update = () => {
                   {...register('name')}
                   name="name"
                   id="name"
-                  placeholder="Product name"
-                  onChange={(e) => {
-                    setValue('name', e.target.value, { shouldValidate: true })
-                  }}
+                  ref={nameRef}
+                  placeholder={product.name}
                 />
               </div>
-  
+
               <div className="lg:flex lg:justify-between my-3 overflow-hidden">
                 <div className="grid gap-3 w-full my-3 mr-3 h-fit">
                   <label htmlFor="category">Categories:</label>
@@ -246,13 +218,9 @@ const update = () => {
                     {...register('categoryId')}
                     id="category"
                     name="categoryId"
-                    placeholder="Select Category"
-                    onChange={(e) => {
-                      setValue('categoryId', e.target.value, {
-                        shouldValidate: true,
-                      })
-                    }}
+                    ref={catIdRef}
                   >
+                    <option disabled>Select category</option>
                     {categories?.map((category: ICategories) => (
                       <option
                         className="h-fit w-fit"
@@ -264,36 +232,34 @@ const update = () => {
                     ))}
                   </select>
                 </div>
-  
+
                 <div className="grid gap-3 w-full my-3 mr-3 h-fit">
                   <label htmlFor="measurement">Measuring Unit:</label>
                   <input
                     className="p-2 w-full rounded border-2 h-fit"
                     type={'text'}
-                    {...register('quantityAvailable')}
-                    id="quantity"
-                    name="quantityAvailable"
-                    placeholder="Available Quantity"
-                    onChange={(e) => {
-                      setValue('quantityAvailable', e.target.value, {
-                        shouldValidate: true,
-                      })
-                    }}
+                    {...register('unitOfMeasurement')}
+                    id="measurement"
+                    name="unitOfMeasurement"
+                    ref={uomRef}
+                  placeholder={product.unitOfMeasurement}
                   />
                 </div>
-  
+
                 <div className="grid gap-3 my-3 w-full h-fit">
                   <label htmlFor="quantity">Available Quantity:</label>
                   <input
                     className="p-2 rounded border-2 h-fit"
                     type={'number'}
-                    id="quantity"
-                    placeholder={product?.quantityAvailable}
                     {...register('quantityAvailable')}
+                    id="quantity"
+                    name='quantityAvailable'
+                    ref={quantityRef}
+                    placeholder={product.quantityAvailable}
                   />
                 </div>
               </div>
-  
+
               <div className="lg:flex lg:justify-between my-3 overflow-hidden">
                 <div className="grid gap-3 w-full my-3 mr-3 h-fit">
                   <label htmlFor="price">Price:</label>
@@ -303,15 +269,11 @@ const update = () => {
                     {...register('unitPrice')}
                     id="price"
                     name="unitPrice"
-                    placeholder="Unit price"
-                    onChange={(e) => {
-                      setValue('unitPrice', e.target.value, {
-                        shouldValidate: true,
-                      })
-                    }}
+                    ref={priceRef}
+                    placeholder={product.unitPrice}
                   />
                 </div>
-  
+
                 <div className="grid gap-3 w-full my-3 mr-3 h-fit">
                   <label htmlFor="bonus">Discount Price:</label>
                   <input
@@ -320,15 +282,11 @@ const update = () => {
                     {...register('falsePrice')}
                     id="bonus"
                     name="falsePrice"
-                    placeholder="Discount price"
-                    onChange={(e) => {
-                      setValue('falsePrice', e.target.value, {
-                        shouldValidate: true,
-                      })
-                    }}
+                    ref={fPriceRef}
+                    placeholder={product.falsePrice}
                   />
                 </div>
-  
+
                 <div className="grid gap-3 my-3 w-full h-fit">
                   <label htmlFor="order" className="font-semibold">
                     Min Order:
@@ -339,16 +297,12 @@ const update = () => {
                     {...register('minOrder')}
                     id="order"
                     name="minOrder"
-                    placeholder="Minimum order"
-                    onChange={(e) => {
-                      setValue('minOrder', e.target.value, {
-                        shouldValidate: true,
-                      })
-                    }}
+                    ref={minOrderRef}
+                    placeholder={product.minOrder}
                   />
                 </div>
               </div>
-  
+
               <div className="lg:flex lg:justify-between my-3 overflow-hidden">
                 <div className="grid gap-3 my-3 w-full h-fit">
                   <label htmlFor="sale" className="font-semibold">
@@ -360,16 +314,12 @@ const update = () => {
                     {...register('unitSale')}
                     id="sale"
                     name="unitSale"
-                    placeholder="Unit sale"
-                    onChange={(e) => {
-                      setValue('unitSale', e.target.value, {
-                        shouldValidate: true,
-                      })
-                    }}
+                    ref={saleRef}
+                    placeholder={product.unitSale}
                   />
                 </div>
               </div>
-  
+
               <div className="lg:flex lg:justify-between">
                 <div className="grid gap-3 w-full my-3 mr-3 h-fit">
                   <label htmlFor="description">Description:</label>
@@ -378,15 +328,11 @@ const update = () => {
                     {...register('description')}
                     id="description"
                     name="description"
-                    placeholder="Product description"
-                    onChange={(e) => {
-                      setValue('description', e.target.value, {
-                        shouldValidate: true,
-                      })
-                    }}
+                    ref={descRef}
+                    placeholder={product.description}
                   ></textarea>
                 </div>
-  
+
                 <div className="grid gap-3 my-3 w-full">
                   <label htmlFor="note">Note:</label>
                   <textarea
@@ -394,14 +340,12 @@ const update = () => {
                     {...register('note')}
                     id="note"
                     name="note"
-                    placeholder="Product Note"
-                    onChange={(e) => {
-                      setValue('note', e.target.value, { shouldValidate: true })
-                    }}
+                    ref={noteRef}
+                    placeholder={product.note}
                   ></textarea>
                 </div>
               </div>
-  
+
               <div className="lg:flex lg:justify-between my-3">
                 <div className="grid gap-3 my-3 w-full mr-3">
                   <label htmlFor="material">Material:</label>
@@ -411,15 +355,11 @@ const update = () => {
                     {...register('material')}
                     id="material"
                     name="material"
-                    placeholder="Product Material"
-                    onChange={(e) => {
-                      setValue('material', e.target.value, {
-                        shouldValidate: true,
-                      })
-                    }}
+                    ref={materialRef}
+                    placeholder={product.material}
                   />
                 </div>
-  
+
                 <div className="grid gap-3 my-3 w-full">
                   <label htmlFor="images">Choose an image or images:</label>
                   <input
@@ -430,15 +370,19 @@ const update = () => {
                     ref={imageRef}
                     multiple
                   />
-                  {product.images.map((image: any)=>{
-                    <div className="grid grid-cols-2">
-                      <Image src={`${process.env.Base_Url}/${image.imageUrl}`} alt={product.name} width={300} height={300} />
+                  {product.images.map((image: any) => {
+                    ;<div className="grid grid-cols-2">
+                      <Image
+                        src={`${process.env.Base_Url}/${image.imageUrl}`}
+                        alt={product.name}
+                        width={250}
+                        height={250}
+                      />
                     </div>
                   })}
-                  
                 </div>
               </div>
-  
+
               {isLoading ? (
                 <WideButton name="Updating Product... " />
               ) : (
@@ -450,8 +394,12 @@ const update = () => {
       </main>
     )
   }
-  
-  return <><Loading /></>
+
+  return (
+    <>
+      <Loading />
+    </>
+  )
 }
 
 export default update

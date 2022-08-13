@@ -30,9 +30,10 @@ const fetchExtra = async (id: string | string[] | undefined) => {
   if (typeof id === 'string') {
     const res = await fetch(`${process.env.Base_Url}/extra/get-extra/${id}`)
     if (res.ok) {
-      return res.json()
+      const data = await res.json()
+      return data.data
     }
-    throw new Error('error fetching product with id')
+    throw new Error('error fetching extra with id')
   }
 
   throw new Error('invalid id')
@@ -41,7 +42,7 @@ const fetchExtra = async (id: string | string[] | undefined) => {
 export async function getServerSideProps() {
   const queryClient = new QueryClient()
 
-  await queryClient.prefetchQuery<IExtra>('extra')
+  await queryClient.prefetchQuery<IExtra, IProducts, ICategories>('extra')
 
   return {
     props: {
@@ -62,41 +63,6 @@ const getProducts = async () => {
   return data.data
 }
 
-const schema = yup.object().shape({
-  name: yup.string().required().max(30),
-  productId: yup.string().required('Select a product'),
-  categoryId: yup.string().required('Select a category'),
-  material: yup.string().required('Extra material is required').max(30),
-  description: yup.string().required('Extra description is required').max(200),
-  note: yup.string().required('Extra note is required').max(150),
-  unitOfMeasurement: yup
-    .string()
-    .required('Unit of measurement is required')
-    .max(20),
-  quantityAvailable: yup
-    .number()
-    .positive('Quantity must be greater than zero')
-    .integer('Quantity must be a whole number')
-    .required('Available Quantity is required'),
-  unitPrice: yup
-    .number()
-    .positive('Price must be greater than zero')
-    .required('Extra price is required'),
-  unitSale: yup
-    .number()
-    .positive('Unit sale must be greater than zero')
-    .required('Unit sale is required'),
-  falsePrice: yup.number().required('Discount price is required'),
-
-  minOrder: yup
-    .number()
-    .positive('Order must be greater than zero')
-    .integer('Quantity must be a whole number')
-    .required('Minimum order is required'),
-})
-
-type FormInputs = yup.InferType<typeof schema>
-
 const update = () => {
   const { status, data } = useSession()
 
@@ -113,32 +79,45 @@ const update = () => {
     enabled: !!id,
   })
 
-  const imageRef = useRef<HTMLInputElement>(null)
-
   const {
     register,
     handleSubmit,
     setValue,
     formState: { errors },
   } = useForm<IExtra>({
-    resolver: yupResolver(schema),
+    shouldUseNativeValidation: true,
+
     defaultValues: {
-      name: extra.name,
-      description: extra.description,
-      productId: extra.productId,
-      categoryId: extra.categoryId,
-      unitOfMeasurement: extra.unitOfMeasurement,
-      quantityAvailable: extra.quantityAvailable,
-      unitPrice: extra.unitPrice,
-      unitSale: extra.unitSale,
-      material: extra.material,
-      note: extra.note,
-      falsePrice: extra.falsePrice,
-      minOrder: extra.minOrder,
+      name: extra?.name,
+      description: extra?.description,
+      productId: extra?.productId,
+      categoryId: extra?.categoryId,
+      unitOfMeasurement: extra?.unitOfMeasurement,
+      quantityAvailable: extra?.quantityAvailable,
+      unitPrice: extra?.unitPrice,
+      unitSale: extra?.unitSale,
+      material: extra?.material,
+      note: extra?.note,
+      falsePrice: extra?.falsePrice,
+      minOrder: extra?.minOrder,
     },
   })
   const { data: categories } = useQuery('categories', getCategories)
   const { data: products } = useQuery('products', getProducts)
+
+  const nameRef = useRef<HTMLInputElement>(extra?.name)
+  const descRef = useRef<HTMLTextAreaElement>(extra?.description)
+  const catIdRef = useRef<HTMLSelectElement>(extra?.categoryId)
+  const prodIdRef = useRef<HTMLSelectElement>(extra?.productId)
+  const uomRef = useRef<HTMLInputElement>(extra?.unitOfMeasurement)
+  const quantityRef = useRef<HTMLInputElement>(extra?.quantityAvailable)
+  const priceRef = useRef<HTMLInputElement>(extra?.unitPrice)
+  const saleRef = useRef<HTMLInputElement>(extra?.saleRef)
+  const materialRef = useRef<HTMLInputElement>(extra?.material)
+  const noteRef = useRef<HTMLTextAreaElement>(extra?.note)
+  const fPriceRef = useRef<HTMLInputElement>(extra?.falsePrice)
+  const minOrderRef = useRef<HTMLInputElement>(extra?.minOrder)
+  const imageRef = useRef<HTMLInputElement>(null)
 
   const {
     mutate,
@@ -152,37 +131,35 @@ const update = () => {
     FormData
   >(updateItem)
 
-  const onSubmit: SubmitHandler<FormInputs | IExtra> = (
-    item: FormInputs | IExtra,
-  ) => {
-    const {
-      name,
-      description,
-      productId,
-      categoryId,
-      unitOfMeasurement,
-      quantityAvailable,
-      unitPrice,
-      unitSale,
-      material,
-      note,
-      falsePrice,
-      minOrder,
-    } = item
+  const onSubmit: SubmitHandler<IExtra> = (item: IExtra) => {
+    // const {
+    //   name,
+    //   description,
+    //   productId,
+    //   categoryId,
+    //   unitOfMeasurement,
+    //   quantityAvailable,
+    //   unitPrice,
+    //   unitSale,
+    //   material,
+    //   note,
+    //   falsePrice,
+    //   minOrder,
+    // } = item
 
     const formData = new FormData()
-    formData.append('name', name)
-    formData.append('description', description)
-    formData.append('productId', productId)
-    formData.append('categoryId', categoryId)
-    formData.append('unitOfMeasurement', unitOfMeasurement)
-    formData.append('quantityAvailable', quantityAvailable.toString())
-    formData.append('unitPrice', unitPrice.toString())
-    formData.append('unitSale', unitSale.toString())
-    formData.append('material', material)
-    formData.append('note', note)
-    formData.append('falsePrice', falsePrice.toString())
-    formData.append('minOrder', minOrder.toString())
+    formData.append('name', nameRef.current.value)
+    formData.append('description', descRef.current.value)
+    formData.append('categoryId', catIdRef.current.value)
+    formData.append('productId', prodIdRef.current.value)
+    formData.append('unitOfMeasurement', uomRef.current.value)
+    formData.append('quantityAvailable', quantityRef.current.value)
+    formData.append('unitPrice', priceRef.current.value)
+    formData.append('unitSale', saleRef.current.value)
+    formData.append('material', materialRef.current.value)
+    formData.append('note', noteRef.current.value)
+    formData.append('falsePrice', fPriceRef.current.value)
+    formData.append('minOrder', minOrderRef.current.value)
 
     if (imageRef.current?.files != undefined) {
       const imgLen = imageRef.current.files.length
@@ -198,7 +175,7 @@ const update = () => {
     mutate(formData)
   }
 
-  if (status === 'authenticated') {
+  if (status === 'authenticated' && extra) {
     return (
       <main className="lg:flex pt-20">
         <Sidebar
@@ -230,10 +207,8 @@ const update = () => {
                   {...register('name')}
                   name="name"
                   id="name"
-                  placeholder="Extra name"
-                  onChange={(e) => {
-                    setValue('name', e.target.value, { shouldValidate: true })
-                  }}
+                  ref={nameRef}
+                  placeholder={extra.name}
                 />
 
                 {errors.name && (
@@ -249,13 +224,11 @@ const update = () => {
                     {...register('categoryId')}
                     id="category"
                     name="categotyId"
-                    placeholder="Select Category"
-                    onChange={(e) => {
-                      setValue('categoryId', e.target.value, {
-                        shouldValidate: true,
-                      })
-                    }}
+                    ref={catIdRef}
                   >
+                    <option disabled className="h-fit w-fit">
+                      Select Category
+                    </option>
                     {categories?.map((category: ICategories) => (
                       <option
                         className="h-fit w-fit"
@@ -280,13 +253,11 @@ const update = () => {
                     {...register('productId')}
                     id="product"
                     name="productId"
-                    placeholder="Select product"
-                    onChange={(e) => {
-                      setValue('productId', e.target.value, {
-                        shouldValidate: true,
-                      })
-                    }}
+                    ref={prodIdRef}
                   >
+                    <option disabled className="h-fit w-fit">
+                      Select Product
+                    </option>
                     {products?.map((product: IProducts) => (
                       <option
                         className="h-fit w-fit"
@@ -314,12 +285,8 @@ const update = () => {
                     {...register('unitPrice')}
                     id="price"
                     name="unitPrice"
-                    placeholder="Unit price"
-                    onChange={(e) => {
-                      setValue('unitPrice', e.target.value, {
-                        shouldValidate: true,
-                      })
-                    }}
+                    ref={priceRef}
+                    placeholder={extra.unitPrice}
                   />
                   {errors.unitPrice && (
                     <span className="text-red-500">
@@ -336,12 +303,8 @@ const update = () => {
                     {...register('falsePrice')}
                     id="bonus"
                     name="falsePrice"
-                    placeholder="Discount price"
-                    onChange={(e) => {
-                      setValue('falsePrice', e.target.value, {
-                        shouldValidate: true,
-                      })
-                    }}
+                    ref={fPriceRef}
+                    placeholder={extra.falsePrice}
                   />
                   {errors.falsePrice && (
                     <span className="text-red-500">
@@ -360,12 +323,8 @@ const update = () => {
                     {...register('minOrder')}
                     id="order"
                     name="minOrder"
-                    placeholder="Minimum order"
-                    onChange={(e) => {
-                      setValue('minOrder', e.target.value, {
-                        shouldValidate: true,
-                      })
-                    }}
+                    ref={minOrderRef}
+                    placeholder={extra.minOrder}
                   />
                   {errors.minOrder && (
                     <span className="text-red-500">
@@ -384,12 +343,8 @@ const update = () => {
                     {...register('unitOfMeasurement')}
                     id="measurement"
                     name="unitOfMeasurement"
-                    placeholder="Measuring unit"
-                    onChange={(e) => {
-                      setValue('unitOfMeasurement', e.target.value, {
-                        shouldValidate: true,
-                      })
-                    }}
+                    ref={uomRef}
+                    placeholder={extra.unitOfMeasurement}
                   />
                   {errors.unitOfMeasurement && (
                     <span className="text-red-500">
@@ -406,12 +361,8 @@ const update = () => {
                     {...register('quantityAvailable')}
                     id="quantity"
                     name="quantityAvailable"
-                    placeholder="Available Quantity"
-                    onChange={(e) => {
-                      setValue('quantityAvailable', e.target.value, {
-                        shouldValidate: true,
-                      })
-                    }}
+                    ref={quantityRef}
+                    placeholder={extra.quantityAvailable}
                   />
                   {errors.quantityAvailable && (
                     <span className="text-red-500">
@@ -429,12 +380,8 @@ const update = () => {
                     {...register('unitSale')}
                     id="sale"
                     name="unitSale"
-                    placeholder="Unit sale"
-                    onChange={(e) => {
-                      setValue('unitSale', e.target.value, {
-                        shouldValidate: true,
-                      })
-                    }}
+                    ref={saleRef}
+                    placeholder={extra.unitSale}
                   />
                   {errors.unitSale && (
                     <span className="text-red-500">
@@ -452,12 +399,8 @@ const update = () => {
                     {...register('description')}
                     id="description"
                     name="description"
-                    placeholder="Extra description"
-                    onChange={(e) => {
-                      setValue('description', e.target.value, {
-                        shouldValidate: true,
-                      })
-                    }}
+                    ref={descRef}
+                    placeholder={extra.description}
                   ></textarea>
                   {errors.description && (
                     <span className="text-red-500">
@@ -473,10 +416,8 @@ const update = () => {
                     {...register('note')}
                     id="note"
                     name="note"
-                    placeholder="Extra Note"
-                    onChange={(e) => {
-                      setValue('note', e.target.value, { shouldValidate: true })
-                    }}
+                    ref={noteRef}
+                    placeholder={extra.note}
                   ></textarea>
                 </div>
               </div>
@@ -490,12 +431,8 @@ const update = () => {
                     {...register('material')}
                     id="material"
                     name="material"
-                    placeholder="Extra Material"
-                    onChange={(e) => {
-                      setValue('material', e.target.value, {
-                        shouldValidate: true,
-                      })
-                    }}
+                    ref={materialRef}
+                    placeholder={extra.material}
                   />
                   {errors.material && (
                     <span className="text-red-500">
